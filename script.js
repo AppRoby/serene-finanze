@@ -575,6 +575,68 @@ function prevStep(){
 }
 
 /* =========================
+   Month Picker (mobile) – auto-injected
+   ========================= */
+function initMonthPicker(){
+  try{
+    const sel = document.getElementById('mese');
+    if(!sel) return;
+
+    // evita doppioni
+    if(document.getElementById('mp-open')) return;
+
+    // wrapper + pulsante + griglia
+    const wrapper = document.createElement('div');
+    wrapper.className = 'mp'; wrapper.id = 'mp';
+
+    const btn = document.createElement('button');
+    btn.type = 'button'; btn.id = 'mp-open'; btn.className = 'mp-btn';
+    btn.textContent = `${cap(periodoCorrente.mese)} ▾`;
+
+    const grid = document.createElement('div');
+    grid.id = 'mp-grid'; grid.className = 'mp-grid'; grid.hidden = true;
+
+    const SHORT = {
+      gennaio:'Gen', febbraio:'Feb', marzo:'Mar', aprile:'Apr',
+      maggio:'Mag', giugno:'Giu', luglio:'Lug', agosto:'Ago',
+      settembre:'Set', ottobre:'Ott', novembre:'Nov', dicembre:'Dic'
+    };
+
+    MESI.forEach(full=>{
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.setAttribute('data-m', full);
+      b.textContent = SHORT[full] || full.slice(0,3);
+      b.addEventListener('click', ()=>{
+        sel.value = full;                   // aggiorna il select nascosto
+        periodoCorrente.mese = full;
+        btn.textContent = `${cap(full)} ▾`;
+        grid.hidden = true;
+        cambiaPeriodo();                    // usa il flusso standard (aggiornaUI)
+      });
+      grid.appendChild(b);
+    });
+
+    // apri/chiudi griglia
+    btn.addEventListener('click', ()=>{ grid.hidden = !grid.hidden; });
+
+    // chiudi se tocchi fuori
+    document.addEventListener('click', (e)=>{
+      if(!wrapper.contains(e.target)) grid.hidden = true;
+    });
+
+    // se cambi il select su desktop, aggiorna etichetta
+    sel.addEventListener('change', ()=>{
+      btn.textContent = `${cap(sel.value)} ▾`;
+    });
+
+    // inserisci subito dopo il select
+    sel.insertAdjacentElement('afterend', wrapper);
+    wrapper.appendChild(btn);
+    wrapper.appendChild(grid);
+  }catch(e){ console.warn('MonthPicker init error', e); }
+}
+/* =========================
    INIT
    ========================= */
 function init(){
@@ -583,7 +645,8 @@ function init(){
   aggiornaUI();
   lockMensileByCumulativo();
   lockCumulativoByPremium();
-  showOnboarding();
+  initMonthPicker();     // <<< attiva il picker a griglia su mobile
+  showOnboarding && showOnboarding();
 
   // aforisma dinamico (se presente)
   const af = document.getElementById("aforisma");
@@ -595,3 +658,4 @@ function init(){
   if(af) af.innerText = afs[new Date().getDate() % afs.length];
 }
 window.addEventListener("DOMContentLoaded", init);
+
