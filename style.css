@@ -236,4 +236,63 @@ select { min-width: 110px; }
   line-height: 1.4em;
   margin: 4px 0;
 }
+/* =========================
+   MOBILE – responsive & compact
+   ========================= */
+
+/* Tablet piccolo */
+@media (max-width: 768px) {
+  .columns { display: grid; grid-template-columns: 1fr; gap: 14px; }
+  .container { padding: 14px; }
+  section { padding: 14px; border-radius: 14px; }
+  h2 { font-size: 1.15rem; }
+  .saldo-box p { margin: 6px 0; }
+}
+
+/* Smartphone */
+@media (max-width: 480px) {
+  /* struttura generale */
+  body { font-size: 14px; line-height: 1.35; }
+  .container { padding: 12px; }
+  section { padding: 12px; border-radius: 12px; }
+
+  /* top bar compatta */
+  .top-bar { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 8px; padding: 12px; }
+  .top-bar .app-title { font-size: 1.6rem; line-height: 1.1; margin: 0; }
+  .abbonamenti-box { display: flex; gap: 8px; width: 100%; flex-wrap: wrap; }
+  .abbonamenti-box .buy,
+  .abbonamenti-box .pro { flex: 1 1 calc(50% - 4px); padding: 10px 12px; font-size: 14px; border-radius: 10px; }
+  .info-prova { font-size: 12px; line-height: 1.2; width: 100%; order: 3; opacity: .9; }
+
+  /* selezione periodo a colonna */
+  .periodo label { display:block; margin:.25rem 0 .15rem; }
+  .periodo select { width: 100%; margin-bottom: .5rem; }
+
+  /* campi e bottoni – MIN 16px per evitare lo zoom iOS */
+  input[type="text"],
+  input[type="number"],
+  select { width:100%; padding: 10px 12px; font-size: 16px; }
+  button { width:100%; padding: 12px; font-size: 16px; border-radius: 10px; }
+
+  /* titoli e testo */
+  h1 { font-size: 1.8rem; }
+  h2 { font-size: 1.05rem; }
+  .hint, .muted, .subtext, small { font-size: 12px; }
+
+  /* liste più dense */
+  ul#listaEntrate li,
+  ul#listaSpese li,
+  .lista-premium li { font-size: 14px; padding: 8px 10px; }
+
+  /* blocchi premium compatti */
+  .premium-block { padding: 12px; margin-bottom: 12px; }
+  .premium-block h3 { font-size: 1rem; margin-bottom: .5rem; }
+
+  /* saldo compatto */
+  .saldo-box p { margin: 4px 0; }
+  .badge { font-size: 12px; padding: 3px 8px; border-radius: 9999px; }
+
+  /* aforisma più piccolo */
+  .aforisma { font-size: 12px; margin-top: 6px; }
+}
 
