@@ -295,4 +295,22 @@ select { min-width: 110px; }
   /* aforisma più piccolo */
   .aforisma { font-size: 12px; margin-top: 6px; }
 }
+/* ==== FIX MOBILE PERIODO (mese/anno) ==== */
+@media (max-width: 600px) {
+  .periodo{
+    display: block !important;      /* forza layout verticale */
+  }
+  .periodo label{
+    display: block;
+    margin: 8px 0 4px;
+    line-height: 1.2;
+  }
+  .periodo select{
+    display: block;
+    width: 100% !important;         /* prende tutta la larghezza */
+    max-width: 100% !important;
+    margin: 0 0 10px 0;
+    font-size: 16px;                /* evita zoom tastiera su iOS */
+  }
+}
 
