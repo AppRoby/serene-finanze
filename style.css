@@ -313,4 +313,34 @@ select { min-width: 110px; }
     font-size: 16px;                /* evita zoom tastiera su iOS */
   }
 }
+/* === MOBILE COMPACT (smartphone) === */
+@media (max-width: 600px) {
+  /* Titolo e header più compatti */
+  h1 { font-size: 1.6rem !important; margin: 0 0 8px !important; }
+  header, .hero, .top-bar, .container { padding: 12px !important; }
+
+  /* Selettori periodo: etichetta sopra, select full width */
+  label[for="mese"], label[for="anno"] { display:block; margin:10px 0 4px; line-height:1.2; }
+  #mese, #anno {
+    display:block; width:100% !important; max-width:100% !important;
+    padding:10px 12px; font-size:16px; /* niente zoom tastiera iOS */
+    margin:0 0 12px 0;
+  }
+
+  /* Sezioni / card */
+  section, .card, .box { padding:12px !important; border-radius:12px !important; }
+
+  /* Input e bottoni */
+  input[type="text"], input[type="number"], select { width:100%; padding:10px 12px; font-size:16px; }
+  button { width:100%; padding:12px; font-size:16px; border-radius:10px; }
+
+  /* Liste e testo */
+  h2 { font-size:1.08rem !important; }
+  .muted, .hint, small { font-size:12px; }
+  ul#listaEntrate li, ul#listaSpese li, .lista-premium li { font-size:14px; padding:8px 10px; }
+
+  /* Saldo più denso */
+  .saldo-box p { margin:6px 0 !important; }
+}
+
 
