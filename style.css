@@ -314,7 +314,7 @@ select { min-width: 110px; }
   }
 }
 /* === MOBILE COMPACT (smartphone) === */
-@media (max-width: 600px) {
+
   /* Titolo e header più compatti */
   h1 { font-size: 1.6rem !important; margin: 0 0 8px !important; }
   header, .hero, .top-bar, .container { padding: 12px !important; }
@@ -342,5 +342,29 @@ select { min-width: 110px; }
   /* Saldo più denso */
   .saldo-box p { margin:6px 0 !important; }
 }
+/* ===== MOBILE COMPACT & MONTH PICKER (4x3) ===== */
+@media (max-width: 600px) {
+  /* compattazione generale */
+  h1 { font-size: 1.6rem !important; margin: 0 0 8px !important; }
+  section, .card, .box { padding: 12px !important; border-radius: 12px !important; margin: 12px 0 !important; }
+  .saldo-box p { margin: 6px 0 !important; }
 
+  /* selettori periodo verticali e compatti */
+  label[for="mese"], label[for="anno"] { display:block; margin:10px 0 4px; }
+  #mese, #anno { display:block; width:100% !important; max-width:100% !important; padding:10px 12px; font-size:16px; margin:0 0 10px 0; }
+
+  /* nascondi select mese su mobile: usiamo il nostro grid picker */
+  #mese { display: none; }
+
+  /* Month-Picker: 4 colonne x 3 righe, niente scroll */
+  .mp { margin: 0 0 10px 0; }
+  .mp-btn { width:100%; padding:10px 12px; font-size:16px; border-radius:10px; background:#2b6cb0; color:#fff; border:none; }
+  .mp-grid {
+    display:grid; grid-template-columns: repeat(4, 1fr); gap:6px;
+    padding:8px; margin-top:8px; background:#0f172a; border:1px solid #1e293b; border-radius:12px;
+  }
+  .mp-grid[hidden] { display:none; }
+  .mp-grid button { padding:8px 0; font-size:13px; border-radius:10px; border:1px solid #334155; background:#111827; color:#e5e7eb; }
+  .mp-grid button:active { transform:scale(0.98); }
+}
 
