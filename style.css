@@ -313,35 +313,7 @@ select { min-width: 110px; }
     font-size: 16px;                /* evita zoom tastiera su iOS */
   }
 }
-/* === MOBILE COMPACT (smartphone) === */
 
-  /* Titolo e header più compatti */
-  h1 { font-size: 1.6rem !important; margin: 0 0 8px !important; }
-  header, .hero, .top-bar, .container { padding: 12px !important; }
-
-  /* Selettori periodo: etichetta sopra, select full width */
-  label[for="mese"], label[for="anno"] { display:block; margin:10px 0 4px; line-height:1.2; }
-  #mese, #anno {
-    display:block; width:100% !important; max-width:100% !important;
-    padding:10px 12px; font-size:16px; /* niente zoom tastiera iOS */
-    margin:0 0 12px 0;
-  }
-
-  /* Sezioni / card */
-  section, .card, .box { padding:12px !important; border-radius:12px !important; }
-
-  /* Input e bottoni */
-  input[type="text"], input[type="number"], select { width:100%; padding:10px 12px; font-size:16px; }
-  button { width:100%; padding:12px; font-size:16px; border-radius:10px; }
-
-  /* Liste e testo */
-  h2 { font-size:1.08rem !important; }
-  .muted, .hint, small { font-size:12px; }
-  ul#listaEntrate li, ul#listaSpese li, .lista-premium li { font-size:14px; padding:8px 10px; }
-
-  /* Saldo più denso */
-  .saldo-box p { margin:6px 0 !important; }
-}
 /* ===== MOBILE COMPACT & MONTH PICKER (4x3) ===== */
 @media (max-width: 600px) {
   /* compattazione generale */
@@ -352,9 +324,6 @@ select { min-width: 110px; }
   /* selettori periodo verticali e compatti */
   label[for="mese"], label[for="anno"] { display:block; margin:10px 0 4px; }
   #mese, #anno { display:block; width:100% !important; max-width:100% !important; padding:10px 12px; font-size:16px; margin:0 0 10px 0; }
-
-  /* nascondi select mese su mobile: usiamo il nostro grid picker */
-  #mese { display: none; }
 
   /* Month-Picker: 4 colonne x 3 righe, niente scroll */
   .mp { margin: 0 0 10px 0; }
@@ -367,25 +336,25 @@ select { min-width: 110px; }
   .mp-grid button { padding:8px 0; font-size:13px; border-radius:10px; border:1px solid #334155; background:#111827; color:#e5e7eb; }
   .mp-grid button:active { transform:scale(0.98); }
 }
-/* ==== DROPDOWN Mese/Anno (affiancati) – MOBILE ==== */
+/* ==== DROPDOWN Mese/Anno (affiancati) – MOBILE SAFE ==== */
 @media (max-width: 600px) {
-  /* nascondi i campi originali (frecce rosse) */
-  .periodo label[for="mese"],
-  .periodo label[for="anno"] { display: none !important; }
-  #mese, #anno { display: none !important; }
+  /* Di default: mostra i select originali. */
+  .picker-row { display: none; }
 
-  /* nascondi eventuale vecchio month-picker a griglia */
-  .mp { display: none !important; }
-
-  /* riga con due colonne: Mese | Anno */
-  .picker-row {
+  /* SOLO quando il JS ha creato i dropdown (body ha la classe js-dd-ready) */
+  .js-dd-ready .picker-row {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 10px;
     margin-top: 6px;
   }
+  .js-dd-ready .periodo label[for="mese"],
+  .js-dd-ready .periodo label[for="anno"] { display: none !important; }
+  .js-dd-ready #mese,
+  .js-dd-ready #anno { display: none !important; }
+  .js-dd-ready .mp { display: none !important; } /* nasconde l’eventuale vecchio grid picker */
 
-  /* stile dropdown */
+  /* Stili dropdown */
   .dd { position: relative; }
   .dd-btn {
     width: 100%;
@@ -405,7 +374,7 @@ select { min-width: 110px; }
     border-radius: 12px;
     padding: 6px;
     z-index: 50;
-    max-height: 60vh;        /* sempre tutta a vista */
+    max-height: 60vh;     /* niente scroll infinito */
     overflow: auto;
   }
   .dd-menu[hidden] { display: none; }
@@ -421,4 +390,3 @@ select { min-width: 110px; }
     font-size: 16px;
   }
 }
-
