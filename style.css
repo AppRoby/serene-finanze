@@ -77,7 +77,7 @@ button.linklike {
   border-radius: 10px;
 }
 ul { list-style: none; padding: 0; }
-ul li { margin-top: 0.5rem; }
+ul li { margin-top: 0.5rem; display:flex; justify-content:space-between; align-items:center; gap:.5rem; }
 
 /* Stati / Messaggi */
 .rosso { background-color: #ffe6e6; color: #c0392b; }
@@ -139,8 +139,15 @@ input[disabled] {
   gap: 0.5rem;
 }
 .saldo-box { background:#f8fafc; border-radius:10px; padding:10px 12px; }
+.saldo-box .rowline { display:flex; align-items:center; justify-content:space-between; gap:.75rem; padding:.25rem 0; }
+.saldo-box .rowline .title { display:flex; align-items:center; gap:.5rem; }
 
-/* Badge */
+/* Badge + micro-animazioni */
+@keyframes pop {
+  0% { transform: scale(0.92); opacity: .6; }
+  70% { transform: scale(1.03); opacity: 1; }
+  100% { transform: scale(1); }
+}
 .badge {
   margin-top: 8px;
   display: inline-block;
@@ -149,6 +156,7 @@ input[disabled] {
   background: #fef3c7;
   color: #92400e;
   font-weight: 700;
+  animation: pop .35s ease-out;
 }
 .hidden { display: none; }
 
@@ -226,6 +234,7 @@ input[disabled] {
   margin-bottom: 10px;
   font-size: 18px;
   color: #1d4ed8;
+  letter-spacing: .5px;
 }
 
 select { min-width: 110px; }
@@ -236,6 +245,7 @@ select { min-width: 110px; }
   line-height: 1.4em;
   margin: 4px 0;
 }
+
 /* =========================
    MOBILE – responsive & compact
    ========================= */
@@ -251,12 +261,10 @@ select { min-width: 110px; }
 
 /* Smartphone */
 @media (max-width: 480px) {
-  /* struttura generale */
   body { font-size: 14px; line-height: 1.35; }
   .container { padding: 12px; }
   section { padding: 12px; border-radius: 12px; }
 
-  /* top bar compatta */
   .top-bar { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 8px; padding: 12px; }
   .top-bar .app-title { font-size: 1.6rem; line-height: 1.1; margin: 0; }
   .abbonamenti-box { display: flex; gap: 8px; width: 100%; flex-wrap: wrap; }
@@ -264,41 +272,34 @@ select { min-width: 110px; }
   .abbonamenti-box .pro { flex: 1 1 calc(50% - 4px); padding: 10px 12px; font-size: 14px; border-radius: 10px; }
   .info-prova { font-size: 12px; line-height: 1.2; width: 100%; order: 3; opacity: .9; }
 
-  /* selezione periodo a colonna */
   .periodo label { display:block; margin:.25rem 0 .15rem; }
   .periodo select { width: 100%; margin-bottom: .5rem; }
 
-  /* campi e bottoni – MIN 16px per evitare lo zoom iOS */
   input[type="text"],
   input[type="number"],
   select { width:100%; padding: 10px 12px; font-size: 16px; }
   button { width:100%; padding: 12px; font-size: 16px; border-radius: 10px; }
 
-  /* titoli e testo */
   h1 { font-size: 1.8rem; }
   h2 { font-size: 1.05rem; }
   .hint, .muted, .subtext, small { font-size: 12px; }
 
-  /* liste più dense */
   ul#listaEntrate li,
   ul#listaSpese li,
   .lista-premium li { font-size: 14px; padding: 8px 10px; }
 
-  /* blocchi premium compatti */
   .premium-block { padding: 12px; margin-bottom: 12px; }
   .premium-block h3 { font-size: 1rem; margin-bottom: .5rem; }
 
-  /* saldo compatto */
   .saldo-box p { margin: 4px 0; }
   .badge { font-size: 12px; padding: 3px 8px; border-radius: 9999px; }
-
-  /* aforisma più piccolo */
   .aforisma { font-size: 12px; margin-top: 6px; }
 }
+
 /* ==== FIX MOBILE PERIODO (mese/anno) ==== */
 @media (max-width: 600px) {
   .periodo{
-    display: block !important;      /* forza layout verticale */
+    display: block !important;
   }
   .periodo label{
     display: block;
@@ -307,25 +308,15 @@ select { min-width: 110px; }
   }
   .periodo select{
     display: block;
-    width: 100% !important;         /* prende tutta la larghezza */
+    width: 100% !important;
     max-width: 100% !important;
     margin: 0 0 10px 0;
-    font-size: 16px;                /* evita zoom tastiera su iOS */
+    font-size: 16px;
   }
 }
 
 /* ===== MOBILE COMPACT & MONTH PICKER (4x3) ===== */
 @media (max-width: 600px) {
-  /* compattazione generale */
-  h1 { font-size: 1.6rem !important; margin: 0 0 8px !important; }
-  section, .card, .box { padding: 12px !important; border-radius: 12px !important; margin: 12px 0 !important; }
-  .saldo-box p { margin: 6px 0 !important; }
-
-  /* selettori periodo verticali e compatti */
-  label[for="mese"], label[for="anno"] { display:block; margin:10px 0 4px; }
-  #mese, #anno { display:block; width:100% !important; max-width:100% !important; padding:10px 12px; font-size:16px; margin:0 0 10px 0; }
-
-  /* Month-Picker: 4 colonne x 3 righe, niente scroll */
   .mp { margin: 0 0 10px 0; }
   .mp-btn { width:100%; padding:10px 12px; font-size:16px; border-radius:10px; background:#2b6cb0; color:#fff; border:none; }
   .mp-grid {
@@ -336,12 +327,10 @@ select { min-width: 110px; }
   .mp-grid button { padding:8px 0; font-size:13px; border-radius:10px; border:1px solid #334155; background:#111827; color:#e5e7eb; }
   .mp-grid button:active { transform:scale(0.98); }
 }
+
 /* ==== DROPDOWN Mese/Anno (affiancati) – MOBILE SAFE ==== */
 @media (max-width: 600px) {
-  /* finché il JS non ha finito: mostra i select */
   .picker-row { display: none; }
-
-  /* quando il JS è pronto aggiunge .js-dd-ready al <body>  */
   .js-dd-ready .picker-row {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -352,11 +341,8 @@ select { min-width: 110px; }
   .js-dd-ready .periodo label[for="anno"] { display: none !important; }
   .js-dd-ready #mese,
   .js-dd-ready #anno { display: none !important; }
-
-  /* se c’è ancora il vecchio month-picker a griglia, nascondilo */
   .js-dd-ready .mp { display: none !important; }
 
-  /* stile dei dropdown */
   .dd { position: relative; }
   .dd-btn {
     width: 100%;
