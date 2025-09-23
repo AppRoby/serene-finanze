@@ -658,4 +658,99 @@ function init(){
   if(af) af.innerText = afs[new Date().getDate() % afs.length];
 }
 window.addEventListener("DOMContentLoaded", init);
+/* ==== DROPDOWN Mese/Anno – auto setup, zero conflitti ==== */
+(function() {
+  function buildDropdown(id, label, items, currentText, onPick) {
+    const wrap = document.createElement('div');
+    wrap.className = 'dd'; wrap.id = id;
+
+    const btn = document.createElement('button');
+    btn.type = 'button'; btn.className = 'dd-btn'; btn.id = id+'-btn';
+    btn.textContent = currentText + ' ▾';
+
+    const menu = document.createElement('div');
+    menu.className = 'dd-menu'; menu.hidden = true;
+
+    items.forEach(it => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.textContent = it.text;
+      b.addEventListener('click', () => {
+        onPick(it.value);
+        btn.textContent = it.text + ' ▾';
+        menu.hidden = true;
+      });
+      menu.appendChild(b);
+    });
+
+    btn.addEventListener('click', () => { menu.hidden = !menu.hidden; });
+    document.addEventListener('click', (e) => { if (!wrap.contains(e.target)) menu.hidden = true; });
+
+    wrap.appendChild(btn); wrap.appendChild(menu);
+    return wrap;
+  }
+
+  function initPeriodDropdowns() {
+    const box = document.getElementById('periodo');
+    const selM = document.getElementById('mese');
+    const selA = document.getElementById('anno');
+    if (!box || !selM || !selA) return;
+
+    // evita doppioni
+    if (document.getElementById('dd-mese')) return;
+
+    // prepara le opzioni leggendo i select già popolati
+    const mesiShort = {gennaio:'Gen', febbraio:'Feb', marzo:'Mar', aprile:'Apr', maggio:'Mag', giugno:'Giu', luglio:'Lug', agosto:'Ago', settembre:'Set', ottobre:'Ott', novembre:'Nov', dicembre:'Dic'};
+    const mesi = Array.from(selM.options).map(o => ({ value:o.value, text:mesiShort[o.value] || o.text }));
+    const anni = Array.from(selA.options).map(o => ({ value:o.value, text:o.text }));
+
+    // riga 2 colonne
+    const row = document.createElement('div');
+    row.className = 'picker-row';
+
+    // dropdown mese
+    const ddM = buildDropdown(
+      'dd-mese',
+      'Mese',
+      mesi,
+      (window.periodoCorrente ? (window.periodoCorrente.mese.charAt(0).toUpperCase()+window.periodoCorrente.mese.slice(1)) : selM.options[selM.selectedIndex].text),
+      (val) => {
+        selM.value = val;
+        if (window.periodoCorrente) window.periodoCorrente.mese = val;
+        if (typeof window.cambiaPeriodo === 'function') window.cambiaPeriodo();
+      }
+    );
+
+    // dropdown anno
+    const ddA = buildDropdown(
+      'dd-anno',
+      'Anno',
+      anni,
+      (window.periodoCorrente ? String(window.periodoCorrente.anno) : selA.options[selA.selectedIndex].text),
+      (val) => {
+        selA.value = val;
+        if (window.periodoCorrente) window.periodoCorrente.anno = Number(val);
+        if (typeof window.cambiaPeriodo === 'function') window.cambiaPeriodo();
+      }
+    );
+
+    row.appendChild(ddM);
+    row.appendChild(ddA);
+    box.appendChild(row);
+
+    // se i select cambiano da altri punti, aggiorna i bottoni
+    selM.addEventListener('change', () => {
+      const t = selM.options[selM.selectedIndex].text;
+      const b = document.getElementById('dd-mese-btn'); if (b) b.textContent = t + ' ▾';
+    });
+    selA.addEventListener('change', () => {
+      const t = selA.options[selA.selectedIndex].text;
+      const b = document.getElementById('dd-anno-btn'); if (b) b.textContent = t + ' ▾';
+    });
+  }
+
+  // esegui dopo che i select sono stati popolati dal tuo init()
+  window.addEventListener('DOMContentLoaded', () => setTimeout(initPeriodDropdowns, 0));
+})();
+
 
