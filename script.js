@@ -658,7 +658,7 @@ function init(){
   if(af) af.innerText = afs[new Date().getDate() % afs.length];
 }
 window.addEventListener("DOMContentLoaded", init);
-/* ==== DROPDOWN Mese/Anno – AUTO, SAFE ==== */
+/* ==== DROPDOWN Mese/Anno – MOBILE HARD HIDE ==== */
 (function() {
   function buildDropdown(id, items, currentText, onPick) {
     const wrap = document.createElement('div');
@@ -691,17 +691,19 @@ window.addEventListener("DOMContentLoaded", init);
   }
 
   function initPeriodDropdowns() {
+    // Esegui SOLO su mobile
+    if (!window.matchMedia('(max-width: 600px)').matches) return;
+
     const box = document.getElementById('periodo');
     const selM = document.getElementById('mese');
     const selA = document.getElementById('anno');
     if (!box || !selM || !selA) return;
 
     // Evita doppioni
-    if (document.getElementById('dd-mese')) return;
+    if (document.querySelector('.picker-row')) return;
 
-    // Opzioni da <select>
-    const short = {gennaio:'Gen', febbraio:'Feb', marzo:'Mar', aprile:'Apr', maggio:'Mag', giugno:'Giu', luglio:'Lug', agosto:'Ago', settembre:'Set', ottobre:'Ott', novembre:'Nov', dicembre:'Dic'};
-    const mesi = Array.from(selM.options).map(o => ({ value:o.value, text: short[o.value] || o.text }));
+    // Leggi opzioni dai select
+    const mesi = Array.from(selM.options).map(o => ({ value:o.value, text:o.text }));
     const anni = Array.from(selA.options).map(o => ({ value:o.value, text:o.text }));
 
     // Riga 2 colonne affiancate
@@ -711,7 +713,7 @@ window.addEventListener("DOMContentLoaded", init);
     const ddM = buildDropdown(
       'dd-mese',
       mesi,
-      (window.periodoCorrente ? (window.periodoCorrente.mese.charAt(0).toUpperCase()+window.periodoCorrente.mese.slice(1)) : selM.options[selM.selectedIndex].text),
+      selM.options[selM.selectedIndex]?.text || 'Mese',
       (val) => {
         selM.value = val;
         if (window.periodoCorrente) window.periodoCorrente.mese = val;
@@ -722,7 +724,7 @@ window.addEventListener("DOMContentLoaded", init);
     const ddA = buildDropdown(
       'dd-anno',
       anni,
-      (window.periodoCorrente ? String(window.periodoCorrente.anno) : selA.options[selA.selectedIndex].text),
+      selA.options[selA.selectedIndex]?.text || 'Anno',
       (val) => {
         selA.value = val;
         if (window.periodoCorrente) window.periodoCorrente.anno = Number(val);
@@ -734,21 +736,27 @@ window.addEventListener("DOMContentLoaded", init);
     row.appendChild(ddA);
     box.appendChild(row);
 
-    // Segnala al CSS che i dropdown sono pronti → nascondi i select originali
-    document.body.classList.add('js-dd-ready');
+    // ✅ Nascondi SUBITO select + label (solo mobile)
+    const labM = document.querySelector('.periodo label[for="mese"]');
+    const labA = document.querySelector('.periodo label[for="anno"]');
+    if (labM) labM.classList.add('hidden-dd');
+    if (labA) labA.classList.add('hidden-dd');
+    selM.style.display = 'none';
+    selA.style.display = 'none';
 
-    // Se i select cambiano da altri punti, aggiorna il testo dei bottoni
-    selM.addEventListener('change', () => {
-      const t = selM.options[selM.selectedIndex].text;
-      const b = document.getElementById('dd-mese-btn'); if (b) b.textContent = t + ' ▾';
-    });
-    selA.addEventListener('change', () => {
-      const t = selA.options[selA.selectedIndex].text;
-      const b = document.getElementById('dd-anno-btn'); if (b) b.textContent = t + ' ▾';
-    });
+    // Attiva stile mobile pronto
+    document.body.classList.add('js-dd-ready');
   }
 
-  // Dopo che i select sono stati popolati dal tuo init()
-  window.addEventListener('DOMContentLoaded', () => setTimeout(initPeriodDropdowns, 0));
+  // Aspetta che i select siano popolati da popolaSelectMesiEAnni()
+  function waitForSelects(){
+    const selM = document.getElementById('mese');
+    const selA = document.getElementById('anno');
+    if (!selM || !selA || selM.options.length===0 || selA.options.length===0) {
+      setTimeout(waitForSelects, 50);
+      return;
+    }
+    initPeriodDropdowns();
+  }
+  window.addEventListener('DOMContentLoaded', waitForSelects);
 })();
-
