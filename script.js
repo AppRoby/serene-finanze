@@ -614,65 +614,6 @@ function prevStep(){
 }
 
 /* =========================
-   Month Picker (mobile) – auto-injected
-   ========================= */
-function initMonthPicker(){
-  try{
-    const sel = document.getElementById('mese');
-    if(!sel) return;
-
-    // evita doppioni
-    if(document.getElementById('mp-open')) return;
-
-    // wrapper + pulsante + griglia
-    const wrapper = document.createElement('div');
-    wrapper.className = 'mp'; wrapper.id = 'mp';
-
-    const btn = document.createElement('button');
-    btn.type = 'button'; btn.id = 'mp-open'; btn.className = 'mp-btn';
-    btn.textContent = `${cap(periodoCorrente.mese)} ▾`;
-
-    const grid = document.createElement('div');
-    grid.id = 'mp-grid'; grid.className = 'mp-grid'; grid.hidden = true;
-
-    const SHORT = {
-      gennaio:'Gen', febbraio:'Feb', marzo:'Mar', aprile:'Apr',
-      maggio:'Mag', giugno:'Giu', luglio:'Lug', agosto:'Ago',
-      settembre:'Set', ottobre:'Ott', novembre:'Nov', dicembre:'Dic'
-    };
-
-    MESI.forEach(full=>{
-      const b = document.createElement('button');
-      b.type = 'button';
-      b.setAttribute('data-m', full);
-      b.textContent = SHORT[full] || full.slice(0,3);
-      b.addEventListener('click', ()=>{
-        sel.value = full;
-        periodoCorrente.mese = full;
-        btn.textContent = `${cap(full)} ▾`;
-        grid.hidden = true;
-        cambiaPeriodo();
-      });
-      grid.appendChild(b);
-    });
-
-    btn.addEventListener('click', ()=>{ grid.hidden = !grid.hidden; });
-
-    document.addEventListener('click', (e)=>{
-      if(!wrapper.contains(e.target)) grid.hidden = true;
-    });
-
-    sel.addEventListener('change', ()=>{
-      btn.textContent = `${cap(sel.value)} ▾`;
-    });
-
-    sel.insertAdjacentElement('afterend', wrapper);
-    wrapper.appendChild(btn);
-    wrapper.appendChild(grid);
-  }catch(e){ console.warn('MonthPicker init error', e); }
-}
-
-/* =========================
    INIT
    ========================= */
 function aggiornaUI(){
@@ -688,7 +629,7 @@ function aggiornaUI(){
 function init(){
   caricaDati();
   popolaSelectMesiEAnni();
-  aggiornaUI();
+  initAllDropdowns(); aggiornaUI();
   initMonthPicker();
   showOnboarding && showOnboarding();
 
@@ -703,98 +644,101 @@ function init(){
 }
 window.addEventListener("DOMContentLoaded", init);
 
-/* ==== DROPDOWN Mese/Anno – MOBILE HARD HIDE (FIX) ==== */
-(function() {
-  function buildDropdown(id, items, currentText, onPick) {
-    const wrap = document.createElement('div');
-    wrap.className = 'dd'; wrap.id = id;
+/* =========================
+   Custom Dropdowns (Single-tap) – universal (mobile & desktop)
+   ========================= */
+function buildDropdownForSelect(selectEl, onPick){
+  if(!selectEl) return null;
+  if(selectEl.dataset.ddBuilt==="1") return selectEl.nextElementSibling; // avoid duplicates
 
-    const btn = document.createElement('button');
-    btn.type = 'button'; btn.className = 'dd-btn'; btn.id = id+'-btn';
-    btn.textContent = currentText + ' ▾';
+  const currentText = selectEl.options[selectEl.selectedIndex]?.text || "";
+  const wrap = document.createElement('div');
+  wrap.className = 'dd';
 
-    const menu = document.createElement('div');
-    menu.className = 'dd-menu'; menu.hidden = true;
+  const btn = document.createElement('button');
+  btn.type = 'button';
+  btn.className = 'dd-btn';
+  btn.textContent = currentText;
 
-    items.forEach(it => {
-      const b = document.createElement('button');
-      b.type = 'button';
-      b.textContent = it.text;
-      b.addEventListener('click', () => {
-        onPick(it.value);
-        btn.textContent = it.text + ' ▾';
-        menu.hidden = true;
-      });
-      menu.appendChild(b);
+  const menu = document.createElement('div');
+  menu.className = 'dd-menu';
+  menu.hidden = true;
+
+  Array.from(selectEl.options).forEach(opt => {
+    const it = document.createElement('button');
+    it.type = 'button';
+    it.className = 'dd-item';
+    it.textContent = opt.text;
+    it.addEventListener('click', () => {
+      selectEl.value = opt.value;
+      btn.textContent = opt.text;
+      menu.hidden = true;
+      // Dispatch change so existing logic (cambiaPeriodo, ecc.) rimane intatta
+      selectEl.dispatchEvent(new Event('change', {bubbles:true}));
+      if(typeof onPick === 'function') onPick(opt.value, opt.text);
     });
+    menu.appendChild(it);
+  });
 
-    btn.addEventListener('click', () => { menu.hidden = !menu.hidden; });
-    document.addEventListener('click', (e) => { if (!wrap.contains(e.target)) menu.hidden = true; });
+  btn.addEventListener('click', () => { 
+    // close other open menus
+    document.querySelectorAll('.dd-menu').forEach(m => { if(m!==menu) m.hidden = true; });
+    menu.hidden = !menu.hidden; 
+  });
+  document.addEventListener('click', (e) => { if(!wrap.contains(e.target)) menu.hidden = true; });
 
-    wrap.appendChild(btn); wrap.appendChild(menu);
-    return wrap;
-  }
+  wrap.appendChild(btn);
+  wrap.appendChild(menu);
 
-  function initPeriodDropdowns() {
-    if (!window.matchMedia('(max-width: 600px)').matches) return;
+  // insert after select
+  selectEl.insertAdjacentElement('afterend', wrap);
+  selectEl.style.display = 'none';
+  selectEl.dataset.ddBuilt = "1";
+  return wrap;
+}
 
-    const box = document.getElementById('periodo') || document.querySelector('.periodo'); // <-- FIX
-    const selM = document.getElementById('mese');
-    const selA = document.getElementById('anno');
-    if (!box || !selM || !selA) return;
+function initAllDropdowns(){
+  // Ensure selects are already populated
+  const ids = [
+    "mese","anno",
+    "meseInizioTarget","annoInizioTarget",
+    "meseTarget","annoTarget",
+    "meseAnnuale","annoAnnuale",
+    "meseMensile","annoMensile"
+  ];
+  ids.forEach(id => {
+    const el = document.getElementById(id);
+    if(!el) return;
+    buildDropdownForSelect(el, (val) => {
+      // For mese/anno principali, cambiare periodo è già gestito via 'change' listener
+    });
+  });
 
-    if (document.querySelector('.picker-row')) return;
+  // For layout: group in rows (month+year pairs) if not grouped yet
+  const pairGroups = [
+    ["mese","anno"],
+    ["meseInizioTarget","annoInizioTarget"],
+    ["meseTarget","annoTarget"],
+    ["meseAnnuale","annoAnnuale"],
+    ["meseMensile","annoMensile"],
+  ];
+  pairGroups.forEach(([mId, aId]) => {
+    const mSel = document.getElementById(mId);
+    const aSel = document.getElementById(aId);
+    if(!mSel || !aSel) return;
+    const mDD = mSel.nextElementSibling && mSel.nextElementSibling.classList.contains('dd') ? mSel.nextElementSibling : null;
+    const aDD = aSel.nextElementSibling && aSel.nextElementSibling.classList.contains('dd') ? aSel.nextElementSibling : null;
+    if(!mDD || !aDD) return;
 
-    const mesi = Array.from(selM.options).map(o => ({ value:o.value, text:o.text }));
-    const anni = Array.from(selA.options).map(o => ({ value:o.value, text:o.text }));
-
-    const row = document.createElement('div');
-    row.className = 'picker-row';
-
-    const ddM = buildDropdown(
-      'dd-mese',
-      mesi,
-      selM.options[selM.selectedIndex]?.text || 'Mese',
-      (val) => {
-        selM.value = val;
-        if (window.periodoCorrente) window.periodoCorrente.mese = val;
-        if (typeof window.cambiaPeriodo === 'function') window.cambiaPeriodo();
-      }
-    );
-
-    const ddA = buildDropdown(
-      'dd-anno',
-      anni,
-      selA.options[selA.selectedIndex]?.text || 'Anno',
-      (val) => {
-        selA.value = val;
-        if (window.periodoCorrente) window.periodoCorrente.anno = Number(val);
-        if (typeof window.cambiaPeriodo === 'function') window.cambiaPeriodo();
-      }
-    );
-
-    row.appendChild(ddM);
-    row.appendChild(ddA);
-    box.appendChild(row);
-
-    const labM = document.querySelector('.periodo label[for="mese"]');
-    const labA = document.querySelector('.periodo label[for="anno"]');
-    if (labM) labM.classList.add('hidden-dd');
-    if (labA) labA.classList.add('hidden-dd');
-    selM.style.display = 'none';
-    selA.style.display = 'none';
-
-    document.body.classList.add('js-dd-ready');
-  }
-
-  function waitForSelects(){
-    const selM = document.getElementById('mese');
-    const selA = document.getElementById('anno');
-    if (!selM || !selA || selM.options.length===0 || selA.options.length===0) {
-      setTimeout(waitForSelects, 50);
-      return;
+    // Create a row wrapper once
+    if(!(mDD.parentElement && mDD.parentElement.classList && mDD.parentElement.classList.contains('dd-row'))){
+      const row = document.createElement('div'); row.className='dd-row';
+      // place row right after the second select (year) or after the first dropdown
+      const anchor = aDD;
+      anchor.parentElement.insertBefore(row, anchor);
+      row.appendChild(mDD);
+      row.appendChild(aDD);
     }
-    initPeriodDropdowns();
-  }
-  window.addEventListener('DOMContentLoaded', waitForSelects);
-})();
+  });
+}
+
