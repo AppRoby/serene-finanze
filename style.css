@@ -338,10 +338,10 @@ select { min-width: 110px; }
 }
 /* ==== DROPDOWN Mese/Anno (affiancati) – MOBILE SAFE ==== */
 @media (max-width: 600px) {
-  /* Di default: mostra i select originali. */
+  /* finché il JS non ha finito: mostra i select */
   .picker-row { display: none; }
 
-  /* SOLO quando il JS ha creato i dropdown (body ha la classe js-dd-ready) */
+  /* quando il JS è pronto aggiunge .js-dd-ready al <body>  */
   .js-dd-ready .picker-row {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -352,9 +352,11 @@ select { min-width: 110px; }
   .js-dd-ready .periodo label[for="anno"] { display: none !important; }
   .js-dd-ready #mese,
   .js-dd-ready #anno { display: none !important; }
-  .js-dd-ready .mp { display: none !important; } /* nasconde l’eventuale vecchio grid picker */
 
-  /* Stili dropdown */
+  /* se c’è ancora il vecchio month-picker a griglia, nascondilo */
+  .js-dd-ready .mp { display: none !important; }
+
+  /* stile dei dropdown */
   .dd { position: relative; }
   .dd-btn {
     width: 100%;
@@ -374,12 +376,11 @@ select { min-width: 110px; }
     border-radius: 12px;
     padding: 6px;
     z-index: 50;
-    max-height: 60vh;     /* niente scroll infinito */
+    max-height: 60vh;
     overflow: auto;
   }
   .dd-menu[hidden] { display: none; }
   .dd-menu button {
-    display: block;
     width: 100%;
     padding: 12px;
     margin: 6px 0;
@@ -390,3 +391,4 @@ select { min-width: 110px; }
     font-size: 16px;
   }
 }
+@media (max-width: 600px){ .hidden-dd{ display:none !important; } }
