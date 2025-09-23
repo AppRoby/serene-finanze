@@ -4,8 +4,8 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Sereni Finanze</title>
-  <link rel="stylesheet" href="style.css?v=16">
-
+  <!-- bump cache -->
+  <link rel="stylesheet" href="style.css?v=17">
 </head>
 <body>
   <!-- Top Bar -->
@@ -24,7 +24,7 @@
 
   <div class="container">
     <!-- Selettori periodo -->
-    <section class="periodo" aria-label="Selezione periodo">
+    <section class="periodo" id="periodo" aria-label="Selezione periodo">
       <label for="mese">Scegli il mese:</label>
       <select id="mese" onchange="cambiaPeriodo()" aria-label="Seleziona mese"></select>
       <label for="anno">Scegli l'anno:</label>
@@ -52,7 +52,7 @@
 
     <!-- Saldi -->
     <section class="base-section" aria-label="Riepilogo saldi">
-      <h2>Saldo per <span id="labelPeriodo">Gennaio 2025</span></h2>
+      <h2>Saldo per <span id="labelPeriodo">GENNAIO 2025</span></h2>
       <div id="saldo" class="saldo-box"></div>
       <p class="aforisma" id="aforisma">✨ Ogni euro risparmiato è un mattone della tua libertà finanziaria.</p>
     </section>
@@ -60,7 +60,7 @@
     <!-- Obiettivo Mensile -->
     <section class="columns base-section" aria-label="Obiettivo mensile">
       <div>
-        <h2>🎯 Obiettivo Risparmio (mensile) – <span id="meseObiettivo">Gennaio 2025</span></h2>
+        <h2>🎯 Obiettivo Risparmio (mensile) – <span id="meseObiettivo">GENNAIO 2025</span></h2>
         <input id="obiettivoMensile" type="number" step="0.01" placeholder="Es. 250 €" aria-label="Obiettivo mensile in euro" />
         <button id="btnSalvaObiettivoMensile" onclick="salvaObiettivoMensile()" aria-label="Salva obiettivo mensile">
           Salva Obiettivo Mensile
@@ -159,6 +159,6 @@
     </section>
   </div>
 
-  <script src="script.js"></script>
+  <script src="script.js?v=17"></script>
 </body>
 </html>
