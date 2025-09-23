@@ -1,4 +1,5 @@
-/* SERENI FINANZE - script.js (Premium lock cumulativo + badge contabile) */
+/* SERENI FINANZE - script.js (v17) */
+/* Premium lock cumulativo + badge contabile + UX boost */
 
 /* =========================
    Costanti e utilità
@@ -7,9 +8,10 @@ const MESI = [
   "gennaio","febbraio","marzo","aprile","maggio","giugno",
   "luglio","agosto","settembre","ottobre","novembre","dicembre"
 ];
-
+const up = s => s.toLocaleUpperCase?.("it-IT") || s.toUpperCase();
 const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
 const idxMeseFromName = m => MESI.indexOf(m);
+const fmt = n => `€${Number(n).toFixed(2)}`;
 
 // storage keys
 const STORE_MAIN   = "sereniFinanze_v8";
@@ -227,11 +229,11 @@ function renderPremium(){
   if(!ULann||!ULmen) return;
   ULann.innerHTML=""; ULmen.innerHTML="";
   speseAnnuali.forEach((s,i)=>{
-    ULann.innerHTML+=`<li><span>${s.desc} — €${s.imp.toFixed(2)} divisi in ${s.mesi} mesi (da ${cap(s.meseStart)} ${s.annoStart})</span>
+    ULann.innerHTML+=`<li><span>${s.desc} — ${fmt(s.imp)} divisi in ${s.mesi} mesi (da ${cap(s.meseStart)} ${s.annoStart})</span>
       <button onclick="rimuoviAnnuale(${i})">✖</button></li>`;
   });
   speseMensili.forEach((s,i)=>{
-    ULmen.innerHTML+=`<li><span>${s.desc} — €${s.imp.toFixed(2)} (da ${cap(s.meseStart)} ${s.annoStart})</span>
+    ULmen.innerHTML+=`<li><span>${s.desc} — ${fmt(s.imp)} (da ${cap(s.meseStart)} ${s.annoStart})</span>
       <button onclick="rimuoviMensile(${i})">✖</button></li>`;
   });
 }
@@ -266,26 +268,26 @@ function calcolaSpesePremiumMese(mese, anno){
 }
 
 /* =========================
-   UI generale
+   UI – funzioni modulari
    ========================= */
-function aggiornaUI(){
+function updateHeader(){
   const m = periodoCorrente.mese; 
   const a = periodoCorrente.anno; 
-  const mIdx = idxMeseFromName(m);
-
-  // header periodo
   const labelPeriodo = document.getElementById("labelPeriodo");
   const labelMeseObj = document.getElementById("meseObiettivo");
-  if (labelPeriodo) labelPeriodo.innerText = `${cap(m)} ${a}`;
-  if (labelMeseObj) labelMeseObj.innerText = `${cap(m)} ${a}`;
+  if (labelPeriodo) labelPeriodo.innerText = `${up(m)} ${a}`;
+  if (labelMeseObj) labelMeseObj.innerText = `${up(m)} ${a}`;
 
   // abbonamento
   const giorniProvaEl = document.getElementById("giorniProva");
   if (giorniProvaEl) giorniProvaEl.innerText = String(statoAbbonamento.giorniProva);
   const verEl = document.getElementById("versioneAttiva");
   if (verEl) verEl.innerText = (statoAbbonamento.versione === "premium" ? "🌟 Versione Premium attiva" : "✅ Versione Base attiva");
+}
 
-  // liste entrate/spese
+function updateLists(){
+  const m = periodoCorrente.mese; 
+  const a = periodoCorrente.anno; 
   const d = getPeriodoData(m,a);
   const ULent = document.getElementById("listaEntrate");
   const ULspe = document.getElementById("listaSpese");
@@ -293,66 +295,94 @@ function aggiornaUI(){
   if (ULspe) ULspe.innerHTML="";
 
   d.entrate.forEach(it=>{
-    if (ULent) ULent.innerHTML += `<li>➕ ${it.descrizione.toUpperCase()}: €${Number(it.importo).toFixed(2)}</li>`;
+    if (ULent) ULent.innerHTML += `
+      <li>
+        <span class="title">➕ ${it.descrizione.toUpperCase()}</span>
+        <span class="importo-verde">${fmt(it.importo)}</span>
+      </li>`;
   });
   d.spese.forEach(it=>{
-    if (ULspe) ULspe.innerHTML += `<li>➖ ${it.descrizione.toUpperCase()}: €${Number(it.importo).toFixed(2)}</li>`;
+    if (ULspe) ULspe.innerHTML += `
+      <li>
+        <span class="title">➖ ${it.descrizione.toUpperCase()}</span>
+        <span class="importo-rosso">-${fmt(Math.abs(it.importo))}</span>
+      </li>`;
   });
+}
 
-  // saldi
+function updateSaldoBox(){
+  const m = periodoCorrente.mese; 
+  const a = periodoCorrente.anno; 
+  const mIdx = idxMeseFromName(m);
+  const d = getPeriodoData(m,a);
+
   const saldoDisp = saldoDisponibileOfNome(m,a);
   const obMes = (d.obiettivoMensile !== null && d.obiettivoMensile !== undefined && isFinite(Number(d.obiettivoMensile)))
     ? Number(d.obiettivoMensile) : 0;
   const saldoCont = saldoDisp - obMes;
   const saldoTot  = saldoTotaleFinoA(mIdx,a);
 
-  const cls = saldoCont<0?"rosso":(saldoCont===0?"neutro":"verde");
-
-  // Badge promemoria lock cumulativo (Premium)
-  const lockedObj = isCumulativoLockedForPremium();
-  let lockBadgeHTML = "";
-  if (lockedObj.locked) {
-    lockBadgeHTML = ` <span class="badge" title="Cumulativo bloccato fino a ${lockedObj.labelEnd}">🔒 fino a ${lockedObj.labelEnd}</span>`;
-  }
-
+  const clsCont = saldoCont < 0 ? "importo-rosso" : (saldoCont === 0 ? "" : "importo-verde");
+  const clsDisp = saldoDisp < 0 ? "importo-rosso" : "importo-verde";
   const saldoBox = document.getElementById("saldo");
-if (saldoBox) {
-  saldoBox.innerHTML = `
-    <p><strong>Disponibile mensile:</strong> €${saldoDisp.toFixed(2)}</p>
-    <p><strong>Contabile mensile:</strong> <span class="${cls}">€${saldoCont.toFixed(2)}</span>${lockBadgeHTML}</p>
-    <p><strong>💰 Totale:</strong> €${saldoTot.toFixed(2)}</p>
-  `;
+  const lockedObj = isCumulativoLockedForPremium();
+  const lockBadgeHTML = lockedObj.locked ? ` <span class="badge" title="Cumulativo bloccato fino a ${lockedObj.labelEnd}">🔒 fino a ${lockedObj.labelEnd}</span>` : "";
+
+  if (saldoBox) {
+    saldoBox.innerHTML = `
+      <div class="rowline">
+        <span class="title">💸 Disponibile mensile</span>
+        <span class="${clsDisp}">${fmt(saldoDisp)}</span>
+      </div>
+      <div class="rowline">
+        <span class="title">📘 Contabile mensile</span>
+        <span class="${clsCont}">${fmt(saldoCont)}</span>
+      </div>
+      <div class="rowline">
+        <span class="title">💰 Totale</span>
+        <span class="${saldoTot<0?'importo-rosso':'importo-verde'}">${fmt(saldoTot)}</span>
+      </div>
+      ${lockBadgeHTML}
+    `;
+  }
 }
-// --- Verifica Obiettivo (mensile) ---
+
+function updateMensileUI(){
+  const m = periodoCorrente.mese; 
+  const a = periodoCorrente.anno; 
+  const d = getPeriodoData(m,a);
+  const saldoDisp = saldoDisponibileOfNome(m,a);
+  const obMes = (d.obiettivoMensile !== null && d.obiettivoMensile !== undefined && isFinite(Number(d.obiettivoMensile)))
+    ? Number(d.obiettivoMensile) : 0;
+
   const mm = document.getElementById("messMens");
   const df = document.getElementById("diffMens");
-  if (mm && df) {
-    const diff = saldoDisp - obMes;
-    df.textContent = "";
-    if (obMes > 0) {
-      if (diff >= 0) {
-        mm.className = "verde";
-        mm.textContent = `✅ Hai raggiunto il tuo obiettivo di €${obMes.toFixed(2)} a ${cap(m)} ${a}. Ottimo lavoro 💪`;
-        if (diff > 0) df.textContent = `Hai superato di €${diff.toFixed(2)}.`;
-      } else {
-        mm.className = "neutro";
-        mm.textContent = `⚠️ A ${cap(m)} ${a} hai risparmiato €${saldoDisp.toFixed(2)}, ti mancano €${Math.abs(diff).toFixed(2)} per arrivare a €${obMes.toFixed(2)}.`;
-      }
-    } else {
-      mm.className = "muted";
-      mm.textContent = "Nessun obiettivo mensile impostato.";
-    }
-  }
+  if (!mm || !df) return;
 
-  lockMensileByCumulativo();   // Base: blocco/sblocco mensile
-  lockCumulativoByPremium();   // Premium: blocco/sblocco cumulativo
-  renderPremium();
-  aggiornaCumulativoUI();
+  const diff = saldoDisp - obMes;
+  df.textContent = "";
+  if (obMes > 0) {
+    if (diff >= 0) {
+      mm.className = "verde";
+      mm.textContent = `✅ Obiettivo di ${fmt(obMes)} RAGGIUNTO a ${up(m)} ${a}. Grande! 💪`;
+      if (diff > 0) df.innerHTML = `Hai superato di <strong>${fmt(diff)}</strong>. Continua così!`;
+      const badge = document.getElementById("badgeMensile");
+      if (badge) { badge.classList.remove("hidden"); badge.setAttribute("aria-hidden","false"); }
+    } else {
+      mm.className = "rosso";
+      mm.textContent = `❗ Hai sforato di ${fmt(Math.abs(diff))} a ${up(m)} ${a}.`;
+      df.innerHTML = `Niente panico: riduci piccole spese ricorrenti e punta a recuperare <strong>${fmt(Math.ceil(Math.abs(diff)))}</strong> entro la prossima settimana. 🔄`;
+      const badge = document.getElementById("badgeMensile");
+      if (badge) { badge.classList.add("hidden"); badge.setAttribute("aria-hidden","true"); }
+    }
+  } else {
+    mm.className = "muted";
+    mm.textContent = "Nessun obiettivo mensile impostato.";
+    const badge = document.getElementById("badgeMensile");
+    if (badge) { badge.classList.add("hidden"); badge.setAttribute("aria-hidden","true"); }
+  }
 }
 
-/* =========================
-   Cumulativo UI
-   ========================= */
 function aggiornaCumulativoUI(){
   const msg = document.getElementById("messaggioCumulativo");
   const det = document.getElementById("dettaglioCumulativo");
@@ -375,14 +405,14 @@ function aggiornaCumulativoUI(){
   const eIdx = obiettivoCumulativo.meseTargetIdx;
   const eY   = obiettivoCumulativo.annoTarget;
 
-  const labelStart = `${cap(MESI[sIdx])} ${sY}`;
-  const labelEnd   = `${cap(MESI[eIdx])} ${eY}`;
+  const labelStart = `${up(MESI[sIdx])} ${sY}`;
+  const labelEnd   = `${up(MESI[eIdx])} ${eY}`;
 
   const progEnd = progressEndWithin(sIdx, sY, eIdx, eY);
   if (progEnd === null){
     msg.className="neutro";
     msg.innerText = `⏳ L'obiettivo non è ancora iniziato. Partirà da ${labelStart}.`;
-    det.innerText = `Target: €${amount.toFixed(2)} entro ${labelEnd}.`;
+    det.innerText = `Target: ${fmt(amount)} entro ${labelEnd}.`;
     if(bar){ bar.style.width="0%"; bar.setAttribute("aria-valuenow","0"); }
     if(badge){ badge.classList.add("hidden"); badge.setAttribute("aria-hidden","true"); }
     return;
@@ -406,17 +436,17 @@ function aggiornaCumulativoUI(){
   if (cumulato > amount){
     msg.className="verde";
     msg.innerText = isPastEnd ? "🏁 Obiettivo superato (dopo la scadenza)!" : "🚀 Obiettivo cumulativo superato!";
-    det.innerText = `Hai risparmiato €${cumulato.toFixed(2)}, cioè €${Math.abs(diff).toFixed(2)} in più del target di €${amount.toFixed(2)} entro ${labelEnd}.`;
+    det.innerText = `Hai risparmiato ${fmt(cumulato)}, cioè ${fmt(Math.abs(diff))} in più del target di ${fmt(amount)} entro ${labelEnd}.`;
     if(badge){ badge.classList.remove("hidden"); badge.setAttribute("aria-hidden","false"); }
   } else if (Math.abs(cumulato - amount) < 0.005) {
     msg.className="verde";
     msg.innerText = "🏆 Obiettivo cumulativo raggiunto!";
-    det.innerText = `Hai centrato €${amount.toFixed(2)} entro ${labelEnd}. Grandioso!`;
+    det.innerText = `Hai centrato ${fmt(amount)} entro ${labelEnd}. Grandioso!`;
     if(badge){ badge.classList.remove("hidden"); badge.setAttribute("aria-hidden","false"); }
   } else {
     msg.className="neutro";
     msg.innerText = "⏳ Obiettivo cumulativo in corso...";
-    det.innerText = `Hai risparmiato finora €${cumulato.toFixed(2)} (${percent.toFixed(0)}%). Mancano €${(amount - cumulato).toFixed(2)} per arrivare a €${amount.toFixed(2)} entro ${labelEnd}.`;
+    det.innerText = `Hai risparmiato finora ${fmt(cumulato)} (${percent.toFixed(0)}%). Mancano ${fmt(amount - cumulato)} per arrivare a ${fmt(amount)} entro ${labelEnd}.`;
   }
 }
 
@@ -469,7 +499,6 @@ function lockCumulativoByPremium(){
   const ai  = document.getElementById("annoInizioTarget");
   const mf  = document.getElementById("meseTarget");
   const af  = document.getElementById("annoTarget");
-  // seleziona il bottone di salvataggio cumulativo senza cambiare l'HTML
   const btn = document.querySelector("button[onclick='salvaObiettivoCumulativo()']");
 
   if(!imp || !mi || !ai || !mf || !af || !btn) return;
@@ -502,13 +531,23 @@ function popolaSelectMesiEAnni(){
   const mesiSelectIds = ["mese","meseInizioTarget","meseTarget","meseAnnuale","meseMensile"];
   mesiSelectIds.forEach(id=>{
     const sel = document.getElementById(id); if(!sel) return;
-    sel.innerHTML=""; MESI.forEach(m=>{ const opt=document.createElement("option"); opt.value=m; opt.text=cap(m); sel.appendChild(opt); });
+    sel.innerHTML="";
+    MESI.forEach(m=>{
+      const opt=document.createElement("option");
+      opt.value=m; opt.text=cap(m);
+      sel.appendChild(opt);
+    });
   });
 
   const anniSelectIds = ["anno","annoInizioTarget","annoTarget","annoAnnuale","annoMensile"];
   anniSelectIds.forEach(id=>{
     const sel = document.getElementById(id); if(!sel) return;
-    sel.innerHTML=""; anni.forEach(y=>{ const opt=document.createElement("option"); opt.value=y; opt.text=y; sel.appendChild(opt); });
+    sel.innerHTML="";
+    anni.forEach(y=>{
+      const opt=document.createElement("option");
+      opt.value=y; opt.text=y;
+      sel.appendChild(opt);
+    });
   });
 
   const selM = document.getElementById("mese");
@@ -608,44 +647,49 @@ function initMonthPicker(){
       b.setAttribute('data-m', full);
       b.textContent = SHORT[full] || full.slice(0,3);
       b.addEventListener('click', ()=>{
-        sel.value = full;                   // aggiorna il select nascosto
+        sel.value = full;
         periodoCorrente.mese = full;
         btn.textContent = `${cap(full)} ▾`;
         grid.hidden = true;
-        cambiaPeriodo();                    // usa il flusso standard (aggiornaUI)
+        cambiaPeriodo();
       });
       grid.appendChild(b);
     });
 
-    // apri/chiudi griglia
     btn.addEventListener('click', ()=>{ grid.hidden = !grid.hidden; });
 
-    // chiudi se tocchi fuori
     document.addEventListener('click', (e)=>{
       if(!wrapper.contains(e.target)) grid.hidden = true;
     });
 
-    // se cambi il select su desktop, aggiorna etichetta
     sel.addEventListener('change', ()=>{
       btn.textContent = `${cap(sel.value)} ▾`;
     });
 
-    // inserisci subito dopo il select
     sel.insertAdjacentElement('afterend', wrapper);
     wrapper.appendChild(btn);
     wrapper.appendChild(grid);
   }catch(e){ console.warn('MonthPicker init error', e); }
 }
+
 /* =========================
    INIT
    ========================= */
+function aggiornaUI(){
+  updateHeader();
+  updateLists();
+  updateSaldoBox();
+  lockMensileByCumulativo();
+  lockCumulativoByPremium();
+  renderPremium();
+  aggiornaCumulativoUI();
+}
+
 function init(){
   caricaDati();
   popolaSelectMesiEAnni();
   aggiornaUI();
-  lockMensileByCumulativo();
-  lockCumulativoByPremium();
-  initMonthPicker();     // <<< attiva il picker a griglia su mobile
+  initMonthPicker();
   showOnboarding && showOnboarding();
 
   // aforisma dinamico (se presente)
@@ -658,7 +702,8 @@ function init(){
   if(af) af.innerText = afs[new Date().getDate() % afs.length];
 }
 window.addEventListener("DOMContentLoaded", init);
-/* ==== DROPDOWN Mese/Anno – MOBILE HARD HIDE ==== */
+
+/* ==== DROPDOWN Mese/Anno – MOBILE HARD HIDE (FIX) ==== */
 (function() {
   function buildDropdown(id, items, currentText, onPick) {
     const wrap = document.createElement('div');
@@ -691,22 +736,18 @@ window.addEventListener("DOMContentLoaded", init);
   }
 
   function initPeriodDropdowns() {
-    // Esegui SOLO su mobile
     if (!window.matchMedia('(max-width: 600px)').matches) return;
 
-    const box = document.getElementById('periodo');
+    const box = document.getElementById('periodo') || document.querySelector('.periodo'); // <-- FIX
     const selM = document.getElementById('mese');
     const selA = document.getElementById('anno');
     if (!box || !selM || !selA) return;
 
-    // Evita doppioni
     if (document.querySelector('.picker-row')) return;
 
-    // Leggi opzioni dai select
     const mesi = Array.from(selM.options).map(o => ({ value:o.value, text:o.text }));
     const anni = Array.from(selA.options).map(o => ({ value:o.value, text:o.text }));
 
-    // Riga 2 colonne affiancate
     const row = document.createElement('div');
     row.className = 'picker-row';
 
@@ -736,7 +777,6 @@ window.addEventListener("DOMContentLoaded", init);
     row.appendChild(ddA);
     box.appendChild(row);
 
-    // ✅ Nascondi SUBITO select + label (solo mobile)
     const labM = document.querySelector('.periodo label[for="mese"]');
     const labA = document.querySelector('.periodo label[for="anno"]');
     if (labM) labM.classList.add('hidden-dd');
@@ -744,11 +784,9 @@ window.addEventListener("DOMContentLoaded", init);
     selM.style.display = 'none';
     selA.style.display = 'none';
 
-    // Attiva stile mobile pronto
     document.body.classList.add('js-dd-ready');
   }
 
-  // Aspetta che i select siano popolati da popolaSelectMesiEAnni()
   function waitForSelects(){
     const selM = document.getElementById('mese');
     const selA = document.getElementById('anno');
