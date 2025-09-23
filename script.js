@@ -658,9 +658,9 @@ function init(){
   if(af) af.innerText = afs[new Date().getDate() % afs.length];
 }
 window.addEventListener("DOMContentLoaded", init);
-/* ==== DROPDOWN Mese/Anno – auto setup, zero conflitti ==== */
+/* ==== DROPDOWN Mese/Anno – AUTO, SAFE ==== */
 (function() {
-  function buildDropdown(id, label, items, currentText, onPick) {
+  function buildDropdown(id, items, currentText, onPick) {
     const wrap = document.createElement('div');
     wrap.className = 'dd'; wrap.id = id;
 
@@ -696,22 +696,20 @@ window.addEventListener("DOMContentLoaded", init);
     const selA = document.getElementById('anno');
     if (!box || !selM || !selA) return;
 
-    // evita doppioni
+    // Evita doppioni
     if (document.getElementById('dd-mese')) return;
 
-    // prepara le opzioni leggendo i select già popolati
-    const mesiShort = {gennaio:'Gen', febbraio:'Feb', marzo:'Mar', aprile:'Apr', maggio:'Mag', giugno:'Giu', luglio:'Lug', agosto:'Ago', settembre:'Set', ottobre:'Ott', novembre:'Nov', dicembre:'Dic'};
-    const mesi = Array.from(selM.options).map(o => ({ value:o.value, text:mesiShort[o.value] || o.text }));
+    // Opzioni da <select>
+    const short = {gennaio:'Gen', febbraio:'Feb', marzo:'Mar', aprile:'Apr', maggio:'Mag', giugno:'Giu', luglio:'Lug', agosto:'Ago', settembre:'Set', ottobre:'Ott', novembre:'Nov', dicembre:'Dic'};
+    const mesi = Array.from(selM.options).map(o => ({ value:o.value, text: short[o.value] || o.text }));
     const anni = Array.from(selA.options).map(o => ({ value:o.value, text:o.text }));
 
-    // riga 2 colonne
+    // Riga 2 colonne affiancate
     const row = document.createElement('div');
     row.className = 'picker-row';
 
-    // dropdown mese
     const ddM = buildDropdown(
       'dd-mese',
-      'Mese',
       mesi,
       (window.periodoCorrente ? (window.periodoCorrente.mese.charAt(0).toUpperCase()+window.periodoCorrente.mese.slice(1)) : selM.options[selM.selectedIndex].text),
       (val) => {
@@ -721,10 +719,8 @@ window.addEventListener("DOMContentLoaded", init);
       }
     );
 
-    // dropdown anno
     const ddA = buildDropdown(
       'dd-anno',
-      'Anno',
       anni,
       (window.periodoCorrente ? String(window.periodoCorrente.anno) : selA.options[selA.selectedIndex].text),
       (val) => {
@@ -738,7 +734,10 @@ window.addEventListener("DOMContentLoaded", init);
     row.appendChild(ddA);
     box.appendChild(row);
 
-    // se i select cambiano da altri punti, aggiorna i bottoni
+    // Segnala al CSS che i dropdown sono pronti → nascondi i select originali
+    document.body.classList.add('js-dd-ready');
+
+    // Se i select cambiano da altri punti, aggiorna il testo dei bottoni
     selM.addEventListener('change', () => {
       const t = selM.options[selM.selectedIndex].text;
       const b = document.getElementById('dd-mese-btn'); if (b) b.textContent = t + ' ▾';
@@ -749,8 +748,7 @@ window.addEventListener("DOMContentLoaded", init);
     });
   }
 
-  // esegui dopo che i select sono stati popolati dal tuo init()
+  // Dopo che i select sono stati popolati dal tuo init()
   window.addEventListener('DOMContentLoaded', () => setTimeout(initPeriodDropdowns, 0));
 })();
-
 
