@@ -367,4 +367,58 @@ select { min-width: 110px; }
   .mp-grid button { padding:8px 0; font-size:13px; border-radius:10px; border:1px solid #334155; background:#111827; color:#e5e7eb; }
   .mp-grid button:active { transform:scale(0.98); }
 }
+/* ==== DROPDOWN Mese/Anno (affiancati) – MOBILE ==== */
+@media (max-width: 600px) {
+  /* nascondi i campi originali (frecce rosse) */
+  .periodo label[for="mese"],
+  .periodo label[for="anno"] { display: none !important; }
+  #mese, #anno { display: none !important; }
+
+  /* nascondi eventuale vecchio month-picker a griglia */
+  .mp { display: none !important; }
+
+  /* riga con due colonne: Mese | Anno */
+  .picker-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 6px;
+  }
+
+  /* stile dropdown */
+  .dd { position: relative; }
+  .dd-btn {
+    width: 100%;
+    padding: 12px 14px;
+    font-size: 16px;
+    border-radius: 14px;
+    border: none;
+    background: #0b4ea3;
+    color: #fff;
+  }
+  .dd-menu {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0; right: 0;
+    background: #0f172a;
+    border: 1px solid #1e293b;
+    border-radius: 12px;
+    padding: 6px;
+    z-index: 50;
+    max-height: 60vh;        /* sempre tutta a vista */
+    overflow: auto;
+  }
+  .dd-menu[hidden] { display: none; }
+  .dd-menu button {
+    display: block;
+    width: 100%;
+    padding: 12px;
+    margin: 6px 0;
+    border-radius: 12px;
+    border: none;
+    background: #0b4ea3;
+    color: #fff;
+    font-size: 16px;
+  }
+}
 
