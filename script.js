@@ -74,7 +74,32 @@ function getPeriodoData(mese, anno){
   return datiPerPeriodo[key] || { entrate: [], spese: [], obiettivoMensile: null };
 }
 function periodToNum(mIdx, year){ return year*12 + mIdx; }
-function numToPeriod(n){ return { mIdx: n % 12, anno: Math.floor(n/12) }; }
+function numToPeriod(n){ return { mIdx: n % 12, anno: Math.floor(n/12) }
+
+/* === Helpers: obiettivo mensile manuale & quota cumulativo per mese === */
+function getObiettivoMensileManuale(d) {
+  // Backward compatibility: some data may still be in d.obiettivoMensile
+  if (d && typeof d.obiettivoMensileManuale === "number") return Number(d.obiettivoMensileManuale);
+  if (d && typeof d.obiettivoMensile === "number") return Number(d.obiettivoMensile);
+  return 0;
+}
+function setObiettivoMensileManuale(d, val) {
+  if (!d) return;
+  d.obiettivoMensileManuale = Number(val);
+  // keep old field for backward-compat but no longer used in calcolo
+  d.obiettivoMensile = Number(val);
+}
+function quotaCumulativoPerMese(meseNome, anno) {
+  if (!obiettivoCumulativo) return 0;
+  const startN = periodToNum(obiettivoCumulativo.meseInizioIdx, obiettivoCumulativo.annoInizio);
+  const endN   = periodToNum(obiettivoCumulativo.meseTargetIdx, obiettivoCumulativo.annoTarget);
+  const curN   = periodToNum(idxMeseFromName(meseNome), anno);
+  if (curN < startN || curN > endN) return 0;
+  const mesiRim = (endN - startN + 1);
+  if (mesiRim <= 0) return 0;
+  return Number(obiettivoCumulativo.amount) / mesiRim;
+}
+; }
 
 /* Somma i saldi disponibili dal periodo A (incluso) al periodo B (incluso) */
 function saldoTotaleTra(mStartIdx, yStart, mEndIdx, yEnd){
@@ -106,9 +131,11 @@ function saldoDisponibileOfNome(meseNome, anno){
   const d = getPeriodoData(meseNome, anno);
   const entr = d.entrate.reduce((s,e)=>s+Number(e.importo),0);
   const spe  = d.spese.reduce((s,e)=>s+Number(e.importo),0);
-  const spePrem = calcolaSpesePremiumMese(meseNome, anno); // Premium
+  const isPrem = (statoAbbonamento && statoAbbonamento.versione === 'premium');
+  const spePrem = isPrem ? calcolaSpesePremiumMese(meseNome, anno) : 0;
   return entr - (spe + spePrem);
 }
+
 function saldoTotaleFinoA(mIdxLimite, annoLimite){
   let tot = 0;
   for(const k in datiPerPeriodo){
@@ -154,9 +181,10 @@ function salvaObiettivoMensile(){
   const val = parseFloat(raw);
   if (!isFinite(val) || val < 0) { alert("Inserisci un numero valido per l'obiettivo mensile."); return; }
   const d = ensurePeriodo(periodoCorrente.mese, periodoCorrente.anno);
-  d.obiettivoMensile = val;   // numero
+  setObiettivoMensileManuale(d, val);
   salvaDati(); aggiornaUI();
 }
+
 
 /* =========================
    Obiettivo Cumulativo
@@ -181,403 +209,10 @@ function salvaObiettivoCumulativo(){
     meseTargetIdx: endIdx,   annoTarget: annoFine
   };
   salvaCumulativo();
-
-  // ripartizione automatica della quota mensile nel range
-  const quota = imp / mesiRim;
-  for(let i=0;i<mesiRim;i++){
-    const idx = startIdx + i;
-    const y   = annoInizio + Math.floor(idx/12);
-    const mIdx= idx % 12;
-    const mNo = MESI[mIdx];
-    const d = ensurePeriodo(mNo, y);
-    d.obiettivoMensile = quota;
-  }
-  salvaDati();
   aggiornaUI();
-  lockMensileByCumulativo();   // Base: blocca mensile se cumulativo attivo
-  lockCumulativoByPremium();   // Premium: blocca cumulativo fino a scadenza
-}
-
-/* =========================
-   Premium: Spese ricorrenti
-   ========================= */
-function aggiungiAnnuale(){
-  const desc=document.getElementById("descAnnuale").value.trim();
-  const imp=parseFloat(document.getElementById("impAnnuale").value);
-  const mesi=parseInt(document.getElementById("mesiRate").value);
-  const meseStart=document.getElementById("meseAnnuale").value;
-  const annoStart=Number(document.getElementById("annoAnnuale").value);
-  if(!desc || !isFinite(imp) || imp<=0){ alert("⚠️ Inserisci descrizione e importo valido."); return; }
-  speseAnnuali.push({desc,imp,mesi,meseStart,annoStart});
-  salvaPremium(); renderPremium(); aggiornaUI();
-}
-function aggiungiMensile(){
-  const desc=document.getElementById("descMensile").value.trim();
-  const imp=parseFloat(document.getElementById("impMensile").value);
-  const meseStart=document.getElementById("meseMensile").value;
-  const annoStart=Number(document.getElementById("annoMensile").value);
-  if(!desc || !isFinite(imp) || imp<=0){ alert("⚠️ Inserisci descrizione e importo valido."); return; }
-  speseMensili.push({desc,imp,meseStart,annoStart,attiva:true});
-  salvaPremium(); renderPremium(); aggiornaUI();
-}
-function rimuoviAnnuale(i){ speseAnnuali.splice(i,1); salvaPremium(); renderPremium(); aggiornaUI(); }
-function rimuoviMensile(i){ speseMensili.splice(i,1); salvaPremium(); renderPremium(); aggiornaUI(); }
-
-function renderPremium(){
-  const ULann=document.getElementById("listaAnnuali");
-  const ULmen=document.getElementById("listaMensili");
-  if(!ULann||!ULmen) return;
-  ULann.innerHTML=""; ULmen.innerHTML="";
-  speseAnnuali.forEach((s,i)=>{
-    ULann.innerHTML+=`<li><span>${s.desc} — ${fmt(s.imp)} divisi in ${s.mesi} mesi (da ${cap(s.meseStart)} ${s.annoStart})</span>
-      <button onclick="rimuoviAnnuale(${i})">✖</button></li>`;
-  });
-  speseMensili.forEach((s,i)=>{
-    ULmen.innerHTML+=`<li><span>${s.desc} — ${fmt(s.imp)} (da ${cap(s.meseStart)} ${s.annoStart})</span>
-      <button onclick="rimuoviMensile(${i})">✖</button></li>`;
-  });
-}
-
-/* Calcolo spese Premium attive in un mese */
-function calcolaSpesePremiumMese(mese, anno){
-  let totale = 0;
-  const idxM = idxMeseFromName(mese);
-
-  // annuali
-  speseAnnuali.forEach(s=>{
-    const startIdx=idxMeseFromName(s.meseStart);
-    const startY=s.annoStart;
-    const quota=s.imp/s.mesi;
-    for(let i=0;i<s.mesi;i++){
-      const y=startY+Math.floor((startIdx+i)/12);
-      const mIdx=(startIdx+i)%12;
-      if(y===anno && mIdx===idxM) totale+=quota;
-    }
-  });
-
-  // mensili
-  speseMensili.forEach(s=>{
-    if(!s.attiva) return;
-    const idxStart=idxMeseFromName(s.meseStart);
-    if(anno>s.annoStart || (anno===s.annoStart && idxM>=idxStart)){
-      totale+=s.imp;
-    }
-  });
-
-  return totale;
-}
-
-/* =========================
-   UI – funzioni modulari
-   ========================= */
-function updateHeader(){
-  const m = periodoCorrente.mese; 
-  const a = periodoCorrente.anno; 
-  const labelPeriodo = document.getElementById("labelPeriodo");
-  const labelMeseObj = document.getElementById("meseObiettivo");
-  if (labelPeriodo) labelPeriodo.innerText = `${up(m)} ${a}`;
-  if (labelMeseObj) labelMeseObj.innerText = `${up(m)} ${a}`;
-
-  // abbonamento
-  const giorniProvaEl = document.getElementById("giorniProva");
-  if (giorniProvaEl) giorniProvaEl.innerText = String(statoAbbonamento.giorniProva);
-  const verEl = document.getElementById("versioneAttiva");
-  if (verEl) verEl.innerText = (statoAbbonamento.versione === "premium" ? "🌟 Versione Premium attiva" : "✅ Versione Base attiva");
-}
-
-function updateLists(){
-  const m = periodoCorrente.mese; 
-  const a = periodoCorrente.anno; 
-  const d = getPeriodoData(m,a);
-  const ULent = document.getElementById("listaEntrate");
-  const ULspe = document.getElementById("listaSpese");
-  if (ULent) ULent.innerHTML="";
-  if (ULspe) ULspe.innerHTML="";
-
-  d.entrate.forEach(it=>{
-    if (ULent) ULent.innerHTML += `
-      <li>
-        <span class="title">➕ ${it.descrizione.toUpperCase()}</span>
-        <span class="importo-verde">${fmt(it.importo)}</span>
-      </li>`;
-  });
-  d.spese.forEach(it=>{
-    if (ULspe) ULspe.innerHTML += `
-      <li>
-        <span class="title">➖ ${it.descrizione.toUpperCase()}</span>
-        <span class="importo-rosso">-${fmt(Math.abs(it.importo))}</span>
-      </li>`;
-  });
-}
-
-function updateSaldoBox(){
-  const m = periodoCorrente.mese; 
-  const a = periodoCorrente.anno; 
-  const mIdx = idxMeseFromName(m);
-  const d = getPeriodoData(m,a);
-
-  const saldoDisp = saldoDisponibileOfNome(m,a);
-  const obMes = (d.obiettivoMensile !== null && d.obiettivoMensile !== undefined && isFinite(Number(d.obiettivoMensile)))
-    ? Number(d.obiettivoMensile) : 0;
-  const saldoCont = saldoDisp - obMes;
-  const saldoTot  = saldoTotaleFinoA(mIdx,a);
-
-  const clsCont = saldoCont < 0 ? "importo-rosso" : (saldoCont === 0 ? "" : "importo-verde");
-  const clsDisp = saldoDisp < 0 ? "importo-rosso" : "importo-verde";
-  const saldoBox = document.getElementById("saldo");
-  const lockedObj = isCumulativoLockedForPremium();
-  const lockBadgeHTML = lockedObj.locked ? ` <span class="badge" title="Cumulativo bloccato fino a ${lockedObj.labelEnd}">🔒 fino a ${lockedObj.labelEnd}</span>` : "";
-
-  if (saldoBox) {
-    saldoBox.innerHTML = `
-      <div class="rowline">
-        <span class="title">💸 Disponibile mensile</span>
-        <span class="${clsDisp}">${fmt(saldoDisp)}</span>
-      </div>
-      <div class="rowline">
-        <span class="title">📘 Contabile mensile</span>
-        <span class="${clsCont}">${fmt(saldoCont)}</span>
-      </div>
-      <div class="rowline">
-        <span class="title">💰 Totale</span>
-        <span class="${saldoTot<0?'importo-rosso':'importo-verde'}">${fmt(saldoTot)}</span>
-      </div>
-      ${lockBadgeHTML}
-    `;
-  }
-}
-
-function updateMensileUI(){
-  const m = periodoCorrente.mese; 
-  const a = periodoCorrente.anno; 
-  const d = getPeriodoData(m,a);
-  const saldoDisp = saldoDisponibileOfNome(m,a);
-  const obMes = (d.obiettivoMensile !== null && d.obiettivoMensile !== undefined && isFinite(Number(d.obiettivoMensile)))
-    ? Number(d.obiettivoMensile) : 0;
-
-  const mm = document.getElementById("messMens");
-  const df = document.getElementById("diffMens");
-  if (!mm || !df) return;
-
-  const diff = saldoDisp - obMes;
-  df.textContent = "";
-  if (obMes > 0) {
-    if (diff >= 0) {
-      mm.className = "verde";
-      mm.textContent = `✅ Obiettivo di ${fmt(obMes)} RAGGIUNTO a ${up(m)} ${a}. Grande! 💪`;
-      if (diff > 0) df.innerHTML = `Hai superato di <strong>${fmt(diff)}</strong>. Continua così!`;
-      const badge = document.getElementById("badgeMensile");
-      if (badge) { badge.classList.remove("hidden"); badge.setAttribute("aria-hidden","false"); }
-    } else {
-      mm.className = "rosso";
-      mm.textContent = `❗ Hai sforato di ${fmt(Math.abs(diff))} a ${up(m)} ${a}.`;
-      df.innerHTML = `Niente panico: riduci piccole spese ricorrenti e punta a recuperare <strong>${fmt(Math.ceil(Math.abs(diff)))}</strong> entro la prossima settimana. 🔄`;
-      const badge = document.getElementById("badgeMensile");
-      if (badge) { badge.classList.add("hidden"); badge.setAttribute("aria-hidden","true"); }
-    }
-  } else {
-    mm.className = "muted";
-    mm.textContent = "Nessun obiettivo mensile impostato.";
-    const badge = document.getElementById("badgeMensile");
-    if (badge) { badge.classList.add("hidden"); badge.setAttribute("aria-hidden","true"); }
-  }
-}
-
-function aggiornaCumulativoUI(){
-  const msg = document.getElementById("messaggioCumulativo");
-  const det = document.getElementById("dettaglioCumulativo");
-  const bar = document.getElementById("progressBar");
-  const badge = document.getElementById("badgeCumulativo");
-  if(!msg || !det) return;
-
-  if(!obiettivoCumulativo){
-    msg.className="muted";
-    msg.innerText="🔔 Hai un obiettivo cumulativo? Impostalo a sinistra.";
-    det.innerText="";
-    if(bar){ bar.style.width="0%"; bar.setAttribute("aria-valuenow","0"); }
-    if(badge){ badge.classList.add("hidden"); badge.setAttribute("aria-hidden","true"); }
-    return;
-  }
-
-  const amount = Number(obiettivoCumulativo.amount) || 0;
-  const sIdx = obiettivoCumulativo.meseInizioIdx;
-  const sY   = obiettivoCumulativo.annoInizio;
-  const eIdx = obiettivoCumulativo.meseTargetIdx;
-  const eY   = obiettivoCumulativo.annoTarget;
-
-  const labelStart = `${up(MESI[sIdx])} ${sY}`;
-  const labelEnd   = `${up(MESI[eIdx])} ${eY}`;
-
-  const progEnd = progressEndWithin(sIdx, sY, eIdx, eY);
-  if (progEnd === null){
-    msg.className="neutro";
-    msg.innerText = `⏳ L'obiettivo non è ancora iniziato. Partirà da ${labelStart}.`;
-    det.innerText = `Target: ${fmt(amount)} entro ${labelEnd}.`;
-    if(bar){ bar.style.width="0%"; bar.setAttribute("aria-valuenow","0"); }
-    if(badge){ badge.classList.add("hidden"); badge.setAttribute("aria-hidden","true"); }
-    return;
-  }
-
-  const cumulato = saldoTotaleTra(sIdx, sY, progEnd.mIdx, progEnd.anno);
-  const percent = amount > 0 ? Math.max(0, Math.min(100, (cumulato / amount) * 100)) : 100;
-  const diff = cumulato - amount;
-
-  if(bar){
-    bar.style.width = `${percent}%`;
-    bar.setAttribute("aria-valuenow", percent.toFixed(0));
-  }
-
-  if(badge){ badge.classList.add("hidden"); badge.setAttribute("aria-hidden","true"); }
-
-  const currentN = periodToNum(idxMeseFromName(periodoCorrente.mese), periodoCorrente.anno);
-  const endN     = periodToNum(eIdx, eY);
-  const isPastEnd= currentN > endN;
-
-  if (cumulato > amount){
-    msg.className="verde";
-    msg.innerText = isPastEnd ? "🏁 Obiettivo superato (dopo la scadenza)!" : "🚀 Obiettivo cumulativo superato!";
-    det.innerText = `Hai risparmiato ${fmt(cumulato)}, cioè ${fmt(Math.abs(diff))} in più del target di ${fmt(amount)} entro ${labelEnd}.`;
-    if(badge){ badge.classList.remove("hidden"); badge.setAttribute("aria-hidden","false"); }
-  } else if (Math.abs(cumulato - amount) < 0.005) {
-    msg.className="verde";
-    msg.innerText = "🏆 Obiettivo cumulativo raggiunto!";
-    det.innerText = `Hai centrato ${fmt(amount)} entro ${labelEnd}. Grandioso!`;
-    if(badge){ badge.classList.remove("hidden"); badge.setAttribute("aria-hidden","false"); }
-  } else {
-    msg.className="neutro";
-    msg.innerText = "⏳ Obiettivo cumulativo in corso...";
-    det.innerText = `Hai risparmiato finora ${fmt(cumulato)} (${percent.toFixed(0)}%). Mancano ${fmt(amount - cumulato)} per arrivare a ${fmt(amount)} entro ${labelEnd}.`;
-  }
-}
-
-/* =========================
-   🔒 Lock mensile in Base (se c'è cumulativo)
-   ========================= */
-function lockMensileByCumulativo() {
-  const input = document.getElementById("obiettivoMensile");
-  const btn   = document.getElementById("btnSalvaObiettivoMensile");
-  const nota  = document.getElementById("notaAuto");
-  if (!input || !btn || !nota) return;
-
-  const isBase = (statoAbbonamento && statoAbbonamento.versione === "base");
-  const hasCum = !!obiettivoCumulativo;
-
-  if (isBase && hasCum) {
-    input.disabled = true;
-    btn.disabled   = true;
-    nota.textContent = "🔒 In Versione Base l'obiettivo mensile è calcolato automaticamente dall'obiettivo cumulativo.";
-    const d = getPeriodoData(periodoCorrente.mese, periodoCorrente.anno);
-    if (d && typeof d.obiettivoMensile === "number") input.value = d.obiettivoMensile;
-  } else {
-    input.disabled = false;
-    btn.disabled   = false;
-    nota.textContent = "";
-  }
-}
-
-/* =========================
-   🔒 Lock cumulativo in Premium (nuovo)
-   ========================= */
-// ritorna { locked: boolean, labelEnd: 'Mese Anno' }
-function isCumulativoLockedForPremium(){
-  if (!obiettivoCumulativo) return { locked:false, labelEnd:"" };
-  const isPrem = (statoAbbonamento && statoAbbonamento.versione === "premium");
-  if (!isPrem) return { locked:false, labelEnd:"" };
-
-  const eIdx = obiettivoCumulativo.meseTargetIdx;
-  const eY   = obiettivoCumulativo.annoTarget;
-  const endN = periodToNum(eIdx, eY);
-  const curN = periodToNum(idxMeseFromName(periodoCorrente.mese), periodoCorrente.anno);
-  const locked = curN <= endN; // fino a fine mese target incluso
-  const labelEnd = `${cap(MESI[eIdx])} ${eY}`;
-  return { locked, labelEnd };
-}
-
-function lockCumulativoByPremium(){
-  const imp = document.getElementById("importoCumulativo");
-  const mi  = document.getElementById("meseInizioTarget");
-  const ai  = document.getElementById("annoInizioTarget");
-  const mf  = document.getElementById("meseTarget");
-  const af  = document.getElementById("annoTarget");
-  const btn = document.querySelector("button[onclick='salvaObiettivoCumulativo()']");
-
-  if(!imp || !mi || !ai || !mf || !af || !btn) return;
-
-  const info = isCumulativoLockedForPremium();
-  if (info.locked) {
-    imp.disabled = true; mi.disabled = true; ai.disabled = true; mf.disabled = true; af.disabled = true; btn.disabled = true;
-    imp.title = mi.title = ai.title = mf.title = af.title = btn.title =
-      `🔒 Cumulativo bloccato in Premium fino a ${info.labelEnd}`;
-  } else {
-    imp.disabled = false; mi.disabled = false; ai.disabled = false; mf.disabled = false; af.disabled = false; btn.disabled = false;
-    imp.removeAttribute("title"); mi.removeAttribute("title"); ai.removeAttribute("title");
-    mf.removeAttribute("title"); af.removeAttribute("title"); btn.removeAttribute("title");
-  }
-}
-
-/* =========================
-   Cambio periodo e select
-   ========================= */
-function cambiaPeriodo(){
-  periodoCorrente.mese = document.getElementById("mese").value;
-  periodoCorrente.anno = Number(document.getElementById("anno").value);
-  aggiornaUI();
-}
-function popolaSelectMesiEAnni(){
-  const annoNow = new Date().getFullYear();
-  const anni = [];
-  for(let y=annoNow-2; y<=annoNow+5; y++) anni.push(y);
-
-  const mesiSelectIds = ["mese","meseInizioTarget","meseTarget","meseAnnuale","meseMensile"];
-  mesiSelectIds.forEach(id=>{
-    const sel = document.getElementById(id); if(!sel) return;
-    sel.innerHTML="";
-    MESI.forEach(m=>{
-      const opt=document.createElement("option");
-      opt.value=m; opt.text=cap(m);
-      sel.appendChild(opt);
-    });
-  });
-
-  const anniSelectIds = ["anno","annoInizioTarget","annoTarget","annoAnnuale","annoMensile"];
-  anniSelectIds.forEach(id=>{
-    const sel = document.getElementById(id); if(!sel) return;
-    sel.innerHTML="";
-    anni.forEach(y=>{
-      const opt=document.createElement("option");
-      opt.value=y; opt.text=y;
-      sel.appendChild(opt);
-    });
-  });
-
-  const selM = document.getElementById("mese");
-  const selA = document.getElementById("anno");
-  if (selM) selM.value = periodoCorrente.mese;
-  if (selA) selA.value = String(periodoCorrente.anno);
-}
-
-/* =========================
-   Azzeramento dati
-   ========================= */
-function azzeraTutto(){
-  if(confirm("Vuoi davvero azzerare tutti i dati?")){
-    localStorage.clear();
-    datiPerPeriodo={}; obiettivoCumulativo=null; speseAnnuali=[]; speseMensili=[];
-    caricaDati(); popolaSelectMesiEAnni(); aggiornaUI();
-    alert("✅ Dati azzerati con successo!");
-  }
-}
-
-/* =========================
-   Versioni
-   ========================= */
-function attivaBase() {
-  statoAbbonamento.versione = "base"; salvaAbbonamento();
-  const el = document.getElementById("versioneAttiva");
-  if (el) el.innerText = "✅ Versione Base attiva";
-  lockMensileByCumulativo();
   lockCumulativoByPremium();
 }
+
 function attivaPremium() {
   statoAbbonamento.versione = "premium"; salvaAbbonamento();
   const el = document.getElementById("versioneAttiva");
@@ -614,6 +249,65 @@ function prevStep(){
 }
 
 /* =========================
+   Month Picker (mobile) – auto-injected
+   ========================= */
+function initMonthPicker(){
+  try{
+    const sel = document.getElementById('mese');
+    if(!sel) return;
+
+    // evita doppioni
+    if(document.getElementById('mp-open')) return;
+
+    // wrapper + pulsante + griglia
+    const wrapper = document.createElement('div');
+    wrapper.className = 'mp'; wrapper.id = 'mp';
+
+    const btn = document.createElement('button');
+    btn.type = 'button'; btn.id = 'mp-open'; btn.className = 'mp-btn';
+    btn.textContent = `${cap(periodoCorrente.mese)} ▾`;
+
+    const grid = document.createElement('div');
+    grid.id = 'mp-grid'; grid.className = 'mp-grid'; grid.hidden = true;
+
+    const SHORT = {
+      gennaio:'Gen', febbraio:'Feb', marzo:'Mar', aprile:'Apr',
+      maggio:'Mag', giugno:'Giu', luglio:'Lug', agosto:'Ago',
+      settembre:'Set', ottobre:'Ott', novembre:'Nov', dicembre:'Dic'
+    };
+
+    MESI.forEach(full=>{
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.setAttribute('data-m', full);
+      b.textContent = SHORT[full] || full.slice(0,3);
+      b.addEventListener('click', ()=>{
+        sel.value = full;
+        periodoCorrente.mese = full;
+        btn.textContent = `${cap(full)} ▾`;
+        grid.hidden = true;
+        cambiaPeriodo();
+      });
+      grid.appendChild(b);
+    });
+
+    btn.addEventListener('click', ()=>{ grid.hidden = !grid.hidden; });
+
+    document.addEventListener('click', (e)=>{
+      if(!wrapper.contains(e.target)) grid.hidden = true;
+    });
+
+    sel.addEventListener('change', ()=>{
+      btn.textContent = `${cap(sel.value)} ▾`;
+    });
+
+    sel.insertAdjacentElement('afterend', wrapper);
+    wrapper.appendChild(btn);
+    wrapper.appendChild(grid);
+  }catch(e){ console.warn('MonthPicker init error', e); }
+}
+
+/* =========================
    INIT
    ========================= */
 function aggiornaUI(){
@@ -629,7 +323,7 @@ function aggiornaUI(){
 function init(){
   caricaDati();
   popolaSelectMesiEAnni();
-  initAllDropdowns(); aggiornaUI();
+  aggiornaUI();
   initMonthPicker();
   showOnboarding && showOnboarding();
 
@@ -644,101 +338,98 @@ function init(){
 }
 window.addEventListener("DOMContentLoaded", init);
 
-/* =========================
-   Custom Dropdowns (Single-tap) – universal (mobile & desktop)
-   ========================= */
-function buildDropdownForSelect(selectEl, onPick){
-  if(!selectEl) return null;
-  if(selectEl.dataset.ddBuilt==="1") return selectEl.nextElementSibling; // avoid duplicates
+/* ==== DROPDOWN Mese/Anno – MOBILE HARD HIDE (FIX) ==== */
+(function() {
+  function buildDropdown(id, items, currentText, onPick) {
+    const wrap = document.createElement('div');
+    wrap.className = 'dd'; wrap.id = id;
 
-  const currentText = selectEl.options[selectEl.selectedIndex]?.text || "";
-  const wrap = document.createElement('div');
-  wrap.className = 'dd';
+    const btn = document.createElement('button');
+    btn.type = 'button'; btn.className = 'dd-btn'; btn.id = id+'-btn';
+    btn.textContent = currentText + ' ▾';
 
-  const btn = document.createElement('button');
-  btn.type = 'button';
-  btn.className = 'dd-btn';
-  btn.textContent = currentText;
+    const menu = document.createElement('div');
+    menu.className = 'dd-menu'; menu.hidden = true;
 
-  const menu = document.createElement('div');
-  menu.className = 'dd-menu';
-  menu.hidden = true;
-
-  Array.from(selectEl.options).forEach(opt => {
-    const it = document.createElement('button');
-    it.type = 'button';
-    it.className = 'dd-item';
-    it.textContent = opt.text;
-    it.addEventListener('click', () => {
-      selectEl.value = opt.value;
-      btn.textContent = opt.text;
-      menu.hidden = true;
-      // Dispatch change so existing logic (cambiaPeriodo, ecc.) rimane intatta
-      selectEl.dispatchEvent(new Event('change', {bubbles:true}));
-      if(typeof onPick === 'function') onPick(opt.value, opt.text);
+    items.forEach(it => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.textContent = it.text;
+      b.addEventListener('click', () => {
+        onPick(it.value);
+        btn.textContent = it.text + ' ▾';
+        menu.hidden = true;
+      });
+      menu.appendChild(b);
     });
-    menu.appendChild(it);
-  });
 
-  btn.addEventListener('click', () => { 
-    // close other open menus
-    document.querySelectorAll('.dd-menu').forEach(m => { if(m!==menu) m.hidden = true; });
-    menu.hidden = !menu.hidden; 
-  });
-  document.addEventListener('click', (e) => { if(!wrap.contains(e.target)) menu.hidden = true; });
+    btn.addEventListener('click', () => { menu.hidden = !menu.hidden; });
+    document.addEventListener('click', (e) => { if (!wrap.contains(e.target)) menu.hidden = true; });
 
-  wrap.appendChild(btn);
-  wrap.appendChild(menu);
+    wrap.appendChild(btn); wrap.appendChild(menu);
+    return wrap;
+  }
 
-  // insert after select
-  selectEl.insertAdjacentElement('afterend', wrap);
-  selectEl.style.display = 'none';
-  selectEl.dataset.ddBuilt = "1";
-  return wrap;
-}
+  function initPeriodDropdowns() {
+    if (!window.matchMedia('(max-width: 600px)').matches) return;
 
-function initAllDropdowns(){
-  // Ensure selects are already populated
-  const ids = [
-    "mese","anno",
-    "meseInizioTarget","annoInizioTarget",
-    "meseTarget","annoTarget",
-    "meseAnnuale","annoAnnuale",
-    "meseMensile","annoMensile"
-  ];
-  ids.forEach(id => {
-    const el = document.getElementById(id);
-    if(!el) return;
-    buildDropdownForSelect(el, (val) => {
-      // For mese/anno principali, cambiare periodo è già gestito via 'change' listener
-    });
-  });
+    const box = document.getElementById('periodo') || document.querySelector('.periodo'); // <-- FIX
+    const selM = document.getElementById('mese');
+    const selA = document.getElementById('anno');
+    if (!box || !selM || !selA) return;
 
-  // For layout: group in rows (month+year pairs) if not grouped yet
-  const pairGroups = [
-    ["mese","anno"],
-    ["meseInizioTarget","annoInizioTarget"],
-    ["meseTarget","annoTarget"],
-    ["meseAnnuale","annoAnnuale"],
-    ["meseMensile","annoMensile"],
-  ];
-  pairGroups.forEach(([mId, aId]) => {
-    const mSel = document.getElementById(mId);
-    const aSel = document.getElementById(aId);
-    if(!mSel || !aSel) return;
-    const mDD = mSel.nextElementSibling && mSel.nextElementSibling.classList.contains('dd') ? mSel.nextElementSibling : null;
-    const aDD = aSel.nextElementSibling && aSel.nextElementSibling.classList.contains('dd') ? aSel.nextElementSibling : null;
-    if(!mDD || !aDD) return;
+    if (document.querySelector('.picker-row')) return;
 
-    // Create a row wrapper once
-    if(!(mDD.parentElement && mDD.parentElement.classList && mDD.parentElement.classList.contains('dd-row'))){
-      const row = document.createElement('div'); row.className='dd-row';
-      // place row right after the second select (year) or after the first dropdown
-      const anchor = aDD;
-      anchor.parentElement.insertBefore(row, anchor);
-      row.appendChild(mDD);
-      row.appendChild(aDD);
+    const mesi = Array.from(selM.options).map(o => ({ value:o.value, text:o.text }));
+    const anni = Array.from(selA.options).map(o => ({ value:o.value, text:o.text }));
+
+    const row = document.createElement('div');
+    row.className = 'picker-row';
+
+    const ddM = buildDropdown(
+      'dd-mese',
+      mesi,
+      selM.options[selM.selectedIndex]?.text || 'Mese',
+      (val) => {
+        selM.value = val;
+        if (window.periodoCorrente) window.periodoCorrente.mese = val;
+        if (typeof window.cambiaPeriodo === 'function') window.cambiaPeriodo();
+      }
+    );
+
+    const ddA = buildDropdown(
+      'dd-anno',
+      anni,
+      selA.options[selA.selectedIndex]?.text || 'Anno',
+      (val) => {
+        selA.value = val;
+        if (window.periodoCorrente) window.periodoCorrente.anno = Number(val);
+        if (typeof window.cambiaPeriodo === 'function') window.cambiaPeriodo();
+      }
+    );
+
+    row.appendChild(ddM);
+    row.appendChild(ddA);
+    box.appendChild(row);
+
+    const labM = document.querySelector('.periodo label[for="mese"]');
+    const labA = document.querySelector('.periodo label[for="anno"]');
+    if (labM) labM.classList.add('hidden-dd');
+    if (labA) labA.classList.add('hidden-dd');
+    selM.style.display = 'none';
+    selA.style.display = 'none';
+
+    document.body.classList.add('js-dd-ready');
+  }
+
+  function waitForSelects(){
+    const selM = document.getElementById('mese');
+    const selA = document.getElementById('anno');
+    if (!selM || !selA || selM.options.length===0 || selA.options.length===0) {
+      setTimeout(waitForSelects, 50);
+      return;
     }
-  });
-}
-
+    initPeriodDropdowns();
+  }
+  window.addEventListener('DOMContentLoaded', waitForSelects);
+})();

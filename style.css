@@ -378,24 +378,3 @@ select { min-width: 110px; }
   }
 }
 @media (max-width: 600px){ .hidden-dd{ display:none !important; } }
-
-/* === Global custom dropdown (single-tap) === */
-.dd { position: relative; display: inline-block; width: 100%; }
-.dd-btn {
-  width: 100%; padding: 12px 14px; font-size: 16px;
-  border-radius: 16px; border: none; background: #0b4ea3; color: #fff;
-  display: flex; align-items: center; justify-content: space-between;
-}
-.dd-btn:after { content: "▾"; opacity: .9; }
-.dd-menu {
-  position: absolute; top: calc(100% + 6px); left: 0; right: 0;
-  background: #0f172a; border: 1px solid #1e293b; border-radius: 12px;
-  padding: 8px; z-index: 100; max-height: 60vh; overflow: auto;
-  box-shadow: 0 10px 24px rgba(0,0,0,.25);
-}
-.dd-menu[hidden] { display: none; }
-.dd-menu .dd-item {
-  width: 100%; padding: 12px; margin: 6px 0; border-radius: 12px; border: none;
-  background: #0b4ea3; color: #fff; font-size: 16px; text-align: left;
-}
-.dd-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 6px; }
