@@ -281,14 +281,17 @@ const saldoDisp = saldoDisponibileOfNome(m,a);
 const obMesManuale = getObiettivoMensileManuale(d);
 const quotaCum = quotaCumulativoPerMese(m,a);
 
-// di default (BASE)
-let saldoCont = saldoDisp - obMesManuale - quotaCum;
+let saldoCont;
 
-// se Premium → includi la quota cumulativo nel piano di accumulo
-if (statoAbbonamento.versione === "premium") {
+// BASE → resta invariato
+if (statoAbbonamento.versione === "base") {
   saldoCont = saldoDisp - obMesManuale - quotaCum;
 }
 
+// PREMIUM → aggiornata con la quota cumulativa
+else if (statoAbbonamento.versione === "premium") {
+  saldoCont = saldoDisp - quotaCum;
+}
   const saldoTot  = saldoTotaleFinoA(mIdx,a);
 
   const saldoBox = document.getElementById("saldo");
