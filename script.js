@@ -261,6 +261,21 @@ function updateHeader(){
   const verEl = document.getElementById("versioneAttiva");
   if (verEl) verEl.innerText = (statoAbbonamento.versione === "premium" ? "🌟 Versione Premium attiva" : "✅ Versione Base attiva");
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 function updateLists(){
   const m = periodoCorrente.mese, a = periodoCorrente.anno;
   const d = getPeriodoData(m,a);
@@ -296,15 +311,7 @@ function updateLists(){
       </li>`;
     } else {
       ULspe.innerHTML = `<li class="muted">Nessuna spesa inserita</li>`;
-    }
   }
-}
-  d.entrate.forEach(it => {
-    if (ULent) ULent.innerHTML += `<li><span>➕ ${it.descrizione.toUpperCase()}</span><span class="importo-verde">${fmt(it.importo)}</span></li>`;
-  });
-  d.spese.forEach(it => {
-    if (ULspe) ULspe.innerHTML += `<li><span>➖ ${it.descrizione.toUpperCase()}</span><span class="importo-rosso">-${fmt(Math.abs(it.importo))}</span></li>`;
-  });
 }
 
 function updateSaldoBox(){
