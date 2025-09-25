@@ -140,8 +140,14 @@ input[disabled] {
 }
 .saldo-box { background:#f8fafc; border-radius:10px; padding:10px 12px; }
 .saldo-box .rowline { display:flex; align-items:center; justify-content:space-between; gap:.75rem; padding:.25rem 0; }
-.saldo-box .rowline .title { display:flex; align-items:center; gap:.5rem; 
-font-weight:700; font-size:1.06rem;    /* +grassetto +leggermente più grande */
+.saldo-box .rowline .title { 
+  display:flex; 
+  align-items:center; 
+  gap:.5rem; 
+  font-weight:700; 
+  font-size:1.06rem;    /* +grassetto +leggermente più grande */
+}
+
 .saldo-box .rowline > span:last-child {
   font-weight:700;
   font-size:1.06rem;                      /* numeri leggermente più grandi */
@@ -416,22 +422,23 @@ select { min-width: 110px; }
 .importo-verde{ color:#22c55e; font-weight:700; }
 .importo-rosso{ color:#dc2626; font-weight:700; }
 }
-/* --- Pulsanti Mese e Anno allineati e con stessa larghezza --- */
+/* === Mese/Anno - due pulsanti identici per larghezza === */
 .mese-anno-container {
-  display: flex;         /* mette mese e anno affiancati */
-  gap: 12px;             /* spazio tra i due */
+  display: flex;
+  gap: 12px;
   margin-top: 5px;
 }
 
+/* i due dropdown costruiti via JS (.dd) si comportano come colonne 50/50 */
 .mese-anno-container .dd {
-  flex: 1 1 0;           /* mese e anno con stessa larghezza */
-  min-width: 120px;      /* non troppo stretti */
+  flex: 1 1 0;       /* stessa larghezza */
+  min-width: 120px;  /* evita pulsanti troppo stretti */
 }
 
+/* il pulsante del dropdown riempie tutta la colonna */
 .mese-anno-container .dd-btn {
-  width: 100% !important; /* il pulsante riempie tutto lo spazio */
-  text-align: center;     /* testo centrato */
-  box-sizing: border-box; /* mantiene padding e bordo */
+  width: 100%;
+  text-align: center;
+  box-sizing: border-box;
 }
-
 
