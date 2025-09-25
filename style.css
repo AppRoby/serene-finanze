@@ -459,4 +459,23 @@ select { min-width: 110px; }
   flex-wrap: wrap;            /* se lo spazio non basta, va a capo */
   font-size: 0.95rem;
 }
+/* === Uniforma spaziatura tra i blocchi principali === */
+.saldo-box,
+.entrate-box,
+.spese-box,
+.obiettivo-mensile-box,
+.verifica-mensile-box,
+.obiettivo-cumulativo-box {
+  margin-bottom: 15px;   /* spazio costante sotto ogni blocco */
+}
+
+/* elimina spazi eccessivi interni */
+.saldo-box:last-child,
+.entrate-box:last-child,
+.spese-box:last-child,
+.obiettivo-mensile-box:last-child,
+.verifica-mensile-box:last-child,
+.obiettivo-cumulativo-box:last-child {
+  margin-bottom: 15px;   /* uguale agli altri, non più */
+}
 
