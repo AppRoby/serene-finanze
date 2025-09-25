@@ -441,4 +441,22 @@ select { min-width: 110px; }
   text-align: center;
   box-sizing: border-box;
 }
+/* === Fissa larghezza box Entrate/Spese e impedisci allargamenti === */
+.entrate-box, .spese-box {
+  width: 100%;                /* prende tutta la larghezza della colonna */
+  max-width: 100%;            /* mai più larghe del contenitore */
+  box-sizing: border-box;     /* padding incluso nel calcolo */
+  word-wrap: break-word;      /* va a capo se il testo è troppo lungo */
+  overflow-wrap: break-word;  /* compatibilità */
+}
+
+.entrate-box .movimento, 
+.spese-box .movimento {
+  display: flex;              /* allineamento ordinato */
+  justify-content: space-between; /* descrizione a sinistra, importo a destra */
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;            /* se lo spazio non basta, va a capo */
+  font-size: 0.95rem;
+}
 
