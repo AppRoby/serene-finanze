@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Sereni Finanze</title>
   <!-- bump cache -->
-  <link rel="stylesheet" href="style.css?v=20">
+  <link rel="stylesheet" href="style.css?v=17">
 </head>
 <body>
   <!-- Top Bar -->
@@ -25,11 +25,12 @@
   <div class="container">
     <!-- Selettori periodo -->
     <section class="periodo" id="periodo" aria-label="Selezione periodo">
-      <label for="mese">Scegli il mese:</label>
-      <select id="mese" onchange="cambiaPeriodo()" aria-label="Seleziona mese"></select>
-      <label for="anno">Scegli l'anno:</label>
-      <select id="anno" onchange="cambiaPeriodo()" aria-label="Seleziona anno"></select>
-    </section>
+  <label for="mese">Scegli il mese e l'anno:</label>
+  <div class="mese-anno-container">
+    <select id="mese" onchange="cambiaPeriodo()" aria-label="Seleziona mese"></select>
+    <select id="anno" onchange="cambiaPeriodo()" aria-label="Seleziona anno"></select>
+  </div>
+</section>
 
     <!-- Entrate / Spese -->
     <section class="columns base-section" aria-label="Gestione entrate e spese">

@@ -35,7 +35,7 @@ body {
 h1 { margin:0; }
 .app-title { font-weight:800; letter-spacing:.3px; }
 
-section { margin-bottom: 2rem; }
+section { margin-bottom: 0.9rem; }
 
 input, select, button {
   padding: 0.6rem 0.7rem;
@@ -140,7 +140,12 @@ input[disabled] {
 }
 .saldo-box { background:#f8fafc; border-radius:10px; padding:10px 12px; }
 .saldo-box .rowline { display:flex; align-items:center; justify-content:space-between; gap:.75rem; padding:.25rem 0; }
-.saldo-box .rowline .title { display:flex; align-items:center; gap:.5rem; }
+.saldo-box .rowline .title { display:flex; align-items:center; gap:.5rem; 
+font-weight:700; font-size:1.06rem;    /* +grassetto +leggermente più grande */
+.saldo-box .rowline > span:last-child {
+  font-weight:700;
+  font-size:1.06rem;                      /* numeri leggermente più grandi */
+}
 
 /* Badge + micro-animazioni */
 @keyframes pop {
@@ -181,6 +186,7 @@ input[disabled] {
   margin-top: 8px;
   color: #334155;
   font-style: italic;
+ font-size: 1.06rem;   /* appena più grande */
 }
 
 /* Responsive */
@@ -392,5 +398,28 @@ select { min-width: 110px; }
 .saldo-breakdown .rowline { display:flex; justify-content:space-between; align-items:center; padding:2px 0; }
 .saldo-breakdown .rowline.sub { opacity:.85; font-size:.95rem; }
 .saldo-breakdown .rowline.total { border-top:1px dashed #cbd5e1; margin-top:6px; padding-top:6px; font-weight:700; }
+/* Etichette più evidenti SOLO per: Disponibile mensile, Contabile mensile, Saldo totale */
+.saldo-breakdown .rowline:first-child span:first-child,
+.saldo-breakdown .rowline.total span:first-child,
+.saldo-breakdown .rowline:last-child span:first-child {
+  font-weight:700;
+  font-size:1.06rem;   /* leggermente più grande */
+}
+
+/* Numeri più grandi nelle stesse 3 righe */
+.saldo-breakdown .rowline:first-child strong,
+.saldo-breakdown .rowline.total strong,
+.saldo-breakdown .rowline:last-child strong {
+  font-size:1.06rem;   /* leggermente più grande */
+}
+
 .importo-verde{ color:#22c55e; font-weight:700; }
 .importo-rosso{ color:#dc2626; font-weight:700; }
+.mese-anno-container {
+  display: flex;
+  gap: 8px;              /* distanza tra mese e anno */
+  align-items: center;
+}
+.mese-anno-container select {
+  flex: 1;               /* mese e anno con stessa larghezza */
+}

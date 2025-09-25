@@ -298,11 +298,11 @@ else if (statoAbbonamento.versione === "premium") {
   if(saldoBox){
     saldoBox.innerHTML = `
       <div class="saldo-breakdown">
-        <div class="rowline"><span>💸 Disponibile</span><strong>${fmt(saldoDisp)}</strong></div>
+        <div class="rowline"><span>💸 Disponibile Mensile</span><strong>${fmt(saldoDisp)}</strong></div>
         <div class="rowline sub"><span>– Obiettivo mensile</span><span>${fmt(obMesManuale)}</span></div>
         <div class="rowline sub"><span>– Quota cumulativo</span><span>${fmt(quotaCum)}</span></div>
-        <div class="rowline total"><span>📘 Contabile</span><strong>${fmt(saldoCont)}</strong></div>
-        <div class="rowline"><span>💰 Totale</span><strong>${fmt(saldoTot)}</strong></div>
+        <div class="rowline total"><span>📘 Contabile Mensile</span><strong>${fmt(saldoCont)}</strong></div>
+        <div class="rowline"><span>💰 Saldo Totale</span><strong>${fmt(saldoTot)}</strong></div>
       </div>
     `;
   }
