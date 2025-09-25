@@ -161,9 +161,7 @@ function aggiungiEntrata(){
   const imp  = parseFloat(document.getElementById("importoEntrata").value);
   if(!desc || !isFinite(imp) || imp<=0){ alert("⚠️ Inserisci descrizione e importo valido (>0)."); return; }
   const d = ensurePeriodo(periodoCorrente.mese, periodoCorrente.anno);
-  const now = Date.now();
-d.entrate.push({ descrizione: desc, importo: imp, ts: now });
-
+  d.entrate.push({descrizione:desc, importo:imp});
   document.getElementById("descrizioneEntrata").value="";
   document.getElementById("importoEntrata").value="";
   salvaDati(); aggiornaUI();
@@ -173,9 +171,7 @@ function aggiungiSpesa(){
   const imp  = parseFloat(document.getElementById("importoSpesa").value);
   if(!desc || !isFinite(imp) || imp<=0){ alert("⚠️ Inserisci descrizione e importo valido (>0)."); return; }
   const d = ensurePeriodo(periodoCorrente.mese, periodoCorrente.anno);
-  const now = Date.now();
-d.spese.push({ descrizione: desc, importo: imp, ts: now });
-
+  d.spese.push({descrizione:desc, importo:imp});
   document.getElementById("descrizioneSpesa").value="";
   document.getElementById("importoSpesa").value="";
   salvaDati(); aggiornaUI();
@@ -261,57 +257,19 @@ function updateHeader(){
   const verEl = document.getElementById("versioneAttiva");
   if (verEl) verEl.innerText = (statoAbbonamento.versione === "premium" ? "🌟 Versione Premium attiva" : "✅ Versione Base attiva");
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 function updateLists(){
   const m = periodoCorrente.mese, a = periodoCorrente.anno;
   const d = getPeriodoData(m,a);
   const ULent = document.getElementById("listaEntrate");
   const ULspe = document.getElementById("listaSpese");
-  if(ULent) ULent.innerHTML = "";
-  if(ULspe) ULspe.innerHTML = "";
-
-  // Ultima entrata (se esiste)
-  const lastE = d.entrate.length ? d.entrate[d.entrate.length - 1] : null;
-  if(ULent){
-    if(lastE){
-      ULent.innerHTML = `<li>
-        <span>➕ ${String(lastE.descrizione||"")}
-          <small class="vm-when">${fmtDateTime(lastE.ts)}</small>
-        </span>
-        <span class="importo-verde">${fmt(lastE.importo)}</span>
-      </li>`;
-    } else {
-      ULent.innerHTML = `<li class="muted">Nessuna entrata inserita</li>`;
-    }
-  }
-
-  // Ultima spesa (se esiste)
-  const lastS = d.spese.length ? d.spese[d.spese.length - 1] : null;
-  if(ULspe){
-    if(lastS){
-      ULspe.innerHTML = `<li>
-        <span>➖ ${String(lastS.descrizione||"")}
-          <small class="vm-when">${fmtDateTime(lastS.ts)}</small>
-        </span>
-        <span class="importo-rosso">-${fmt(Math.abs(lastS.importo))}</span>
-      </li>`;
-    } else {
-      ULspe.innerHTML = `<li class="muted">Nessuna spesa inserita</li>`;
-  }
+  if(ULent) ULent.innerHTML="";
+  if(ULspe) ULspe.innerHTML="";
+  d.entrate.forEach(it => {
+    if (ULent) ULent.innerHTML += `<li><span>➕ ${it.descrizione.toUpperCase()}</span><span class="importo-verde">${fmt(it.importo)}</span></li>`;
+  });
+  d.spese.forEach(it => {
+    if (ULspe) ULspe.innerHTML += `<li><span>➖ ${it.descrizione.toUpperCase()}</span><span class="importo-rosso">-${fmt(Math.abs(it.importo))}</span></li>`;
+  });
 }
 
 function updateSaldoBox(){
@@ -560,23 +518,17 @@ function apriModalMovimenti(){
   const ULspe = modal.querySelector("#vm-lista-spese");
   const esc = s => String(s||"").replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
 
-if(ULent) ULent.innerHTML = d.entrate.map(it =>
-  `<li><span>➕ ${String(it.descrizione||"")}
-     <small class="vm-when">${fmtDateTime(it.ts)}</small></span>
-     <span class="importo-verde">${fmt(it.importo)}</span></li>`
-).join("");
-
-if(ULspe) ULspe.innerHTML = d.spese.map(it =>
-  `<li><span>➖ ${String(it.descrizione||"")}
-     <small class="vm-when">${fmtDateTime(it.ts)}</small></span>
-     <span class="importo-rosso">-${fmt(Math.abs(it.importo))}</span></li>`
-).join("");
+  if(ULent) ULent.innerHTML = d.entrate.map(it =>
+    `<li><span>➕ ${esc(it.descrizione)}</span><span class="importo-verde">${fmt(it.importo)}</span></li>`
+  ).join("");
+  if(ULspe) ULspe.innerHTML = d.spese.map(it =>
+    `<li><span>➖ ${esc(it.descrizione)}</span><span class="importo-rosso">-${fmt(Math.abs(it.importo))}</span></li>`
+  ).join("");
 
   // Totali e saldo netto
- const totEntr = d.entrate.reduce((s,e)=>s+Number(e.importo||0),0);
-const totSpe  = d.spese.reduce((s,e)=>s+Number(e.importo||0),0);
-const saldo   = totEntr - totSpe; // saldo NETTO del mese (corretto)
-
+  const totEntr = d.entrate.reduce((s,e)=>s+Number(e.importo||0),0);
+  const totSpe  = d.spese.reduce((s,e)=>s+Number(e.importo||0),0);
+  const saldo   = saldoDisponibileOfNome(m, a); // include eventuali spese Premium
 
   const elME = modal.querySelector("#vm-meseanno");
   const elTE = modal.querySelector("#vm-tot-entrate");
@@ -618,18 +570,5 @@ window.addEventListener("DOMContentLoaded", ()=>{
     if(ev.key === "Escape") chiudiModalMovimenti();
   });
 });
-// Data/ora in formato 25/09/2025 17:42
-function fmtDateTime(ts){
-  try{
-    if(!ts) return ""; // per i movimenti vecchi senza ts
-    const d = new Date(ts);
-    const dd = String(d.getDate()).padStart(2,'0');
-    const mm = String(d.getMonth()+1).padStart(2,'0');
-    const yyyy = d.getFullYear();
-    const hh = String(d.getHours()).padStart(2,'0');
-    const mi = String(d.getMinutes()).padStart(2,'0');
-    return `${dd}/${mm}/${yyyy} ${hh}:${mi}`;
-  }catch(e){ return ""; }
-}
 
 
