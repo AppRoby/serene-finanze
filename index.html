@@ -55,6 +55,13 @@
         <button onclick="aggiungiSpesa()" aria-label="Salva spesa">Salva Spesa</button>
         <ul id="listaSpese" aria-live="polite"></ul>
       </div>
+      <!-- VEDI MOVIMENTI: pulsante barra full-width -->
+      <div class="vm-fullrow">
+        <button id="btnVediMovimenti" class="vm-barbtn" type="button" aria-haspopup="dialog" aria-controls="modalMovimenti">
+          👁️ VEDI MOVIMENTI DEL MESE
+        </button>
+      </div>
+
     </section>
 
     <!-- Obiettivo Mensile -->
@@ -158,7 +165,34 @@
       <button onclick="azzeraTutto()" class="danger">🔄 AZZERA TUTTO (solo per test!)</button>
     </section>
   </div>
-
+  <!-- Modal 'Vedi Movimenti' -->
+  <div id="modalMovimenti" class="vm-modal" aria-hidden="true">
+    <div class="vm-modal__overlay" data-close="1"></div>
+    <div class="vm-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="vm-title" tabindex="-1">
+      <header class="vm-modal__header">
+        <h3 id="vm-title">Movimenti di <span id="vm-meseanno"></span></h3>
+        <button class="vm-close" aria-label="Chiudi" data-close="1">✖</button>
+      </header>
+      <div class="vm-modal__body">
+        <div class="vm-col">
+          <h4>Entrate</h4>
+          <ul id="vm-lista-entrate" class="vm-list"></ul>
+        </div>
+        <div class="vm-col">
+          <h4>Spese</h4>
+          <ul id="vm-lista-spese" class="vm-list"></ul>
+        </div>
+      </div>
+      <footer class="vm-modal__footer">
+        <div class="vm-totals">
+          <div>Totale entrate: <strong id="vm-tot-entrate"></strong></div>
+          <div>Totale spese: <strong id="vm-tot-spese"></strong></div>
+          <div>Saldo netto: <strong id="vm-saldo"></strong></div>
+        </div>
+        <button class="vm-ok" data-close="1" aria-label="Chiudi riepilogo">OK</button>
+      </footer>
+    </div>
+  </div>
   <script src="script.js?v=17"></script>
 </body>
 </html>

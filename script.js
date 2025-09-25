@@ -503,3 +503,72 @@ function init(){
   if(af) af.innerText = afs[new Date().getDate() % afs.length];
 }
 window.addEventListener("DOMContentLoaded", init);
+/* =========================
+   VEDI MOVIMENTI (Modal)
+   ========================= */
+function apriModalMovimenti(){
+  const modal = document.getElementById("modalMovimenti");
+  if(!modal) return;
+  // Dati del mese corrente
+  const m = periodoCorrente.mese, a = periodoCorrente.anno;
+  const d = getPeriodoData(m, a);
+
+  // Liste
+  const ULent = modal.querySelector("#vm-lista-entrate");
+  const ULspe = modal.querySelector("#vm-lista-spese");
+  const esc = s => String(s||"").replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+
+  if(ULent) ULent.innerHTML = d.entrate.map(it =>
+    `<li><span>➕ ${esc(it.descrizione)}</span><span class="importo-verde">${fmt(it.importo)}</span></li>`
+  ).join("");
+  if(ULspe) ULspe.innerHTML = d.spese.map(it =>
+    `<li><span>➖ ${esc(it.descrizione)}</span><span class="importo-rosso">-${fmt(Math.abs(it.importo))}</span></li>`
+  ).join("");
+
+  // Totali e saldo netto
+  const totEntr = d.entrate.reduce((s,e)=>s+Number(e.importo||0),0);
+  const totSpe  = d.spese.reduce((s,e)=>s+Number(e.importo||0),0);
+  const saldo   = saldoDisponibileOfNome(m, a); // include eventuali spese Premium
+
+  const elME = modal.querySelector("#vm-meseanno");
+  const elTE = modal.querySelector("#vm-tot-entrate");
+  const elTS = modal.querySelector("#vm-tot-spese");
+  const elSN = modal.querySelector("#vm-saldo");
+
+  if(elME) elME.textContent = cap(m) + " " + a;
+  if(elTE) elTE.textContent = fmt(totEntr);
+  if(elTS) elTS.textContent = fmt(totSpe);
+  if(elSN) elSN.textContent = (saldo>=0? fmt(saldo) : `-${fmt(Math.abs(saldo))}`);
+
+  // Apri modal
+  modal.classList.add("is-open");
+  const title = modal.querySelector("#vm-title");
+  if(title) title.focus();
+}
+
+function chiudiModalMovimenti(){
+  const modal = document.getElementById("modalMovimenti");
+  if(!modal) return;
+  modal.classList.remove("is-open");
+}
+
+// Wiring al load (lasciamo intatto il tuo init)
+window.addEventListener("DOMContentLoaded", ()=>{
+  const btn = document.getElementById("btnVediMovimenti");
+  if(btn) btn.addEventListener("click", apriModalMovimenti);
+
+  const modal = document.getElementById("modalMovimenti");
+  if(modal){
+    modal.addEventListener("click", (ev)=>{
+      const t = ev.target;
+      if(t && t.getAttribute("data-close")) chiudiModalMovimenti();
+    });
+  }
+
+  // Chiudi con ESC
+  document.addEventListener("keydown", (ev)=>{
+    if(ev.key === "Escape") chiudiModalMovimenti();
+  });
+});
+
+

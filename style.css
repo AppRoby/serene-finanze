@@ -478,3 +478,54 @@ select { min-width: 110px; }
 .obiettivo-cumulativo-box:last-child {
   margin-bottom: 15px;   /* uguale agli altri, non più */
 }
+/* ====== VEDI MOVIMENTI (button barra + modal) ====== */
+.columns .vm-fullrow { flex: 0 0 100%; }
+.vm-fullrow { width: 100%; }
+
+button.vm-barbtn {
+  width: 100%;
+  padding: 12px 16px;
+  font-weight: 700;
+  letter-spacing: .5px;
+  border-radius: 10px;
+  background: linear-gradient(180deg,#0ea5e9,#0284c7);
+  color: #fff;
+  border: none;
+  box-shadow: 0 6px 16px rgba(2,132,199,.25);
+}
+button.vm-barbtn:hover { filter: brightness(1.05); transform: translateY(-1px); }
+button.vm-barbtn:active { transform: translateY(0); }
+
+/* Modal */
+.vm-modal { position: fixed; inset: 0; display: none; z-index: 9999; }
+.vm-modal.is-open { display: block; }
+.vm-modal__overlay { position: absolute; inset: 0; background: rgba(15,23,42,.5); backdrop-filter: blur(2px); }
+.vm-modal__dialog {
+  position: relative;
+  margin: 6vh auto;
+  width: min(940px, 92vw);
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0,0,0,.25);
+  display: flex;
+  flex-direction: column;
+  max-height: 88vh;
+  overflow: hidden;
+}
+.vm-modal__header { display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; border-bottom: 1px solid #e5e7eb; }
+.vm-modal__header h3 { margin: 0; font-size: 1.15rem; }
+.vm-modal__body { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; padding: 14px 18px; overflow:auto; }
+.vm-modal__body h4 { margin: 0 0 8px; }
+.vm-modal__body .vm-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.vm-modal__body .vm-list li { display: flex; align-items: center; justify-content: space-between; background: #f8fafc; padding: 10px 12px; border-radius: 10px; }
+.vm-modal__footer { display:flex; align-items:center; justify-content: space-between; gap: 12px; padding: 12px 18px; background: #f1f5f9; border-top:1px solid #e5e7eb; }
+.vm-totals { display: grid; gap: 4px; }
+.vm-totals strong { font-weight: 800; }
+.vm-close, .vm-ok { border: none; border-radius: 10px; padding: 10px 14px; font-weight: 700; }
+.vm-close { background: #e2e8f0; }
+.vm-ok { background: #0ea5e9; color: #fff; }
+
+@media (max-width: 640px){
+  .vm-modal__body { grid-template-columns: 1fr; }
+}
+
