@@ -416,32 +416,22 @@ select { min-width: 110px; }
 .importo-verde{ color:#22c55e; font-weight:700; }
 .importo-rosso{ color:#dc2626; font-weight:700; }
 }
-
-.mese-anno-container select {
-  flex: 1;
-  min-width: 120px;
-}
-/* Affianca i dropdown custom generati dallo script */
-.mese-anno-container .dd {
-  /* la regola globale .dd ha width:100%; qui la sovrascriviamo */
-  width: auto;
-  flex: 1 1 0;
-  min-width: 120px;
-}
-
-/* (opzionale) margine tra i due pulsanti se il gap non si applica */
-.mese-anno-container .dd + .dd { margin-left: 12px; }
-/* Forza mese e anno affiancati */
+/* --- Pulsanti Mese e Anno allineati e con stessa larghezza --- */
 .mese-anno-container {
-  display: flex;
-  gap: 12px;
+  display: flex;         /* mette mese e anno affiancati */
+  gap: 12px;             /* spazio tra i due */
   margin-top: 5px;
 }
 
-/* Prende i dropdown custom generati dallo script */
 .mese-anno-container .dd {
-  flex: 1 1 auto;      /* li distribuisce in larghezza */
-  width: auto !important;   /* sovrascrive width:100% globale */
-  min-width: 120px;
+  flex: 1 1 0;           /* mese e anno con stessa larghezza */
+  min-width: 120px;      /* non troppo stretti */
 }
+
+.mese-anno-container .dd-btn {
+  width: 100% !important; /* il pulsante riempie tutto lo spazio */
+  text-align: center;     /* testo centrato */
+  box-sizing: border-box; /* mantiene padding e bordo */
+}
+
 
