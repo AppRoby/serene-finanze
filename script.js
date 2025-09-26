@@ -161,7 +161,8 @@ function aggiungiEntrata(){
   const imp  = parseFloat(document.getElementById("importoEntrata").value);
   if(!desc || !isFinite(imp) || imp<=0){ alert("⚠️ Inserisci descrizione e importo valido (>0)."); return; }
   const d = ensurePeriodo(periodoCorrente.mese, periodoCorrente.anno);
-  d.entrate.push({descrizione:desc, importo:imp});
+ const now = Date.now();
+d.entrate.push({ descrizione: desc, importo: imp, ts: now });
   document.getElementById("descrizioneEntrata").value="";
   document.getElementById("importoEntrata").value="";
   salvaDati(); aggiornaUI();
@@ -171,7 +172,8 @@ function aggiungiSpesa(){
   const imp  = parseFloat(document.getElementById("importoSpesa").value);
   if(!desc || !isFinite(imp) || imp<=0){ alert("⚠️ Inserisci descrizione e importo valido (>0)."); return; }
   const d = ensurePeriodo(periodoCorrente.mese, periodoCorrente.anno);
-  d.spese.push({descrizione:desc, importo:imp});
+  const now = Date.now();
+d.spese.push({ descrizione: desc, importo: imp, ts: now });
   document.getElementById("descrizioneSpesa").value="";
   document.getElementById("importoSpesa").value="";
   salvaDati(); aggiornaUI();
@@ -540,12 +542,22 @@ function apriModalMovimenti(){
   const esc = s => String(s||"").replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
 
   if(ULent) ULent.innerHTML = d.entrate.map(it =>
-    `<li><span>➕ ${esc(it.descrizione)}</span><span class="importo-verde">${fmt(it.importo)}</span></li>`
-  ).join("");
-  if(ULspe) ULspe.innerHTML = d.spese.map(it =>
-    `<li><span>➖ ${esc(it.descrizione)}</span><span class="importo-rosso">-${fmt(Math.abs(it.importo))}</span></li>`
-  ).join("");
+  `<li>
+    <span>➕ ${esc(it.descrizione)}
+      <small class="vm-when">${fmtDateTime(it.ts)}</small>
+    </span>
+    <span class="importo-verde">${fmt(it.importo)}</span>
+  </li>`
+).join("");
 
+if(ULspe) ULspe.innerHTML = d.spese.map(it =>
+  `<li>
+    <span>➖ ${esc(it.descrizione)}
+      <small class="vm-when">${fmtDateTime(it.ts)}</small>
+    </span>
+    <span class="importo-rosso">-${fmt(Math.abs(it.importo))}</span>
+  </li>`
+).join("");
   // Totali e saldo netto
   const totEntr = d.entrate.reduce((s,e)=>s+Number(e.importo||0),0);
   const totSpe  = d.spese.reduce((s,e)=>s+Number(e.importo||0),0);
@@ -591,5 +603,17 @@ window.addEventListener("DOMContentLoaded", ()=>{
     if(ev.key === "Escape") chiudiModalMovimenti();
   });
 });
+function fmtDateTime(ts){
+  try{
+    if(!ts) return "";
+    const d = new Date(ts);
+    const dd = String(d.getDate()).padStart(2,'0');
+    const mm = String(d.getMonth()+1).padStart(2,'0');
+    const yyyy = d.getFullYear();
+    const hh = String(d.getHours()).padStart(2,'0');
+    const mi = String(d.getMinutes()).padStart(2,'0');
+    return `${dd}/${mm}/${yyyy} ${hh}:${mi}`;
+  }catch(e){ return ""; }
+}
 
 
