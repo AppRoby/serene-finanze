@@ -512,3 +512,8 @@ select { min-width: 110px; }
 @media (max-width:640px){
   .vm-modal__body{ grid-template-columns:1fr; }
 }
+.vm-when {
+  margin-left: 6px;
+  font-size: 0.8em;
+  color: #64748b; /* grigio elegante */
+}
