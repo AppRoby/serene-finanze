@@ -262,14 +262,35 @@ function updateLists(){
   const d = getPeriodoData(m,a);
   const ULent = document.getElementById("listaEntrate");
   const ULspe = document.getElementById("listaSpese");
-  if(ULent) ULent.innerHTML="";
-  if(ULspe) ULspe.innerHTML="";
-  d.entrate.forEach(it => {
-    if (ULent) ULent.innerHTML += `<li><span>➕ ${it.descrizione.toUpperCase()}</span><span class="importo-verde">${fmt(it.importo)}</span></li>`;
-  });
-  d.spese.forEach(it => {
-    if (ULspe) ULspe.innerHTML += `<li><span>➖ ${it.descrizione.toUpperCase()}</span><span class="importo-rosso">-${fmt(Math.abs(it.importo))}</span></li>`;
-  });
+
+  if(ULent) ULent.innerHTML = "";
+  if(ULspe) ULspe.innerHTML = "";
+
+  // Ultima entrata (se esiste)
+  const lastE = d.entrate.length ? d.entrate[d.entrate.length - 1] : null;
+  if(ULent){
+    if(lastE){
+      ULent.innerHTML = `<li>
+        <span>➕ ${String(lastE.descrizione||"")}</span>
+        <span class="importo-verde">${fmt(lastE.importo)}</span>
+      </li>`;
+    } else {
+      ULent.innerHTML = `<li class="muted">Nessuna entrata inserita</li>`;
+    }
+  }
+
+  // Ultima spesa (se esiste)
+  const lastS = d.spese.length ? d.spese[d.spese.length - 1] : null;
+  if(ULspe){
+    if(lastS){
+      ULspe.innerHTML = `<li>
+        <span>➖ ${String(lastS.descrizione||"")}</span>
+        <span class="importo-rosso">-${fmt(Math.abs(lastS.importo))}</span>
+      </li>`;
+    } else {
+      ULspe.innerHTML = `<li class="muted">Nessuna spesa inserita</li>`;
+    }
+  }
 }
 
 function updateSaldoBox(){
