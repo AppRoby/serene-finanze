@@ -1,71 +1,198 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Sereni Finanze</title>
-  <link rel="stylesheet" href="style.css?v=17">
+  <!-- bump cache -->
+  <link rel="stylesheet" href="style.css?v=20">
 </head>
 <body>
-  <header>
-    <h1>📅 Sereni Finanze</h1>
-  </header>
+  <!-- Top Bar -->
+  <div class="top-bar notice" role="region" aria-label="Barra superiore">
+    <h1 class="app-title">📆 Sereni Finanze</h1>
 
-  <main>
-    <section id="saldo-section">
-      <h2>Saldo per <span id="meseCorrente">GENNAIO</span> <span id="annoCorrente">2025</span></h2>
-      <p class="motivazione">✨ Ogni euro risparmiato è un mattone della tua libertà finanziaria.</p>
-    </section>
-
-    <section id="scegli-periodo">
-      <label for="mese">Scegli il mese e l'anno:</label><br>
-      <select id="mese"></select>
-      <select id="anno"></select>
-    </section>
-
-    <section class="columns">
-      <div class="col">
-        <h3>Entrate</h3>
-        <input id="descEntrata" type="text" placeholder="Descrizione">
-        <input id="importoEntrata" type="number" placeholder="Importo (€)">
-        <button id="btnEntrata">Salva Entrata</button>
-        <ul id="listaEntrate"></ul>
+    <div id="abbonamenti" class="abbonamenti-box actions" aria-label="Gestione versioni">
+      <button class="buy" onclick="attivaBase()" aria-label="Attiva versione base">Versione Base</button>
+      <button class="pro" onclick="attivaPremium()" aria-label="Attiva versione Premium">Attiva Premium</button>
+      <div id="provaInfo" class="info-prova">
+        ⏳ Periodo di prova: ancora <span id="giorniProva">30</span> giorni —
+        <span id="versioneAttiva">✅ Versione Base attiva</span>
       </div>
-      <div class="col">
-        <h3>Spese</h3>
-        <input id="descSpesa" type="text" placeholder="Descrizione">
-        <input id="importoSpesa" type="number" placeholder="Importo (€)">
-        <button id="btnSpesa">Salva Spesa</button>
-        <ul id="listaSpese"></ul>
+    </div>
+  </div>
+
+  <div class="container">
+<!-- Saldi -->
+    <section class="base-section" aria-label="Riepilogo saldi">
+      <h2>Saldo per <span id="labelPeriodo">GENNAIO 2025</span></h2>
+      <div id="saldo" class="saldo-box"></div>
+      <p class="aforisma" id="aforisma">✨ Ogni euro risparmiato è un mattone della tua libertà finanziaria.</p>
+    </section>
+    <!-- Selettori periodo -->
+    <section class="periodo" id="periodo" aria-label="Selezione periodo">
+  <label for="mese">Scegli il mese e l'anno:</label>
+  <div class="mese-anno-container">
+    <select id="mese" onchange="cambiaPeriodo()" aria-label="Seleziona mese"></select>
+    <select id="anno" onchange="cambiaPeriodo()" aria-label="Seleziona anno"></select>
+  </div>
+</section>
+
+    <!-- Entrate / Spese -->
+    <section class="columns base-section" aria-label="Gestione entrate e spese">
+      <div>
+        <h2>Entrate</h2>
+        <input id="descrizioneEntrata" type="text" placeholder="Descrizione" aria-label="Descrizione entrata" />
+        <input id="importoEntrata" type="number" step="0.01" placeholder="Importo (€)" aria-label="Importo entrata in euro" />
+        <button onclick="aggiungiEntrata()" aria-label="Salva entrata">Salva Entrata</button>
+        <ul id="listaEntrate" aria-live="polite"></ul>
+      </div>
+
+      <div>
+        <h2>Spese</h2>
+        <input id="descrizioneSpesa" type="text" placeholder="Descrizione" aria-label="Descrizione spesa" />
+        <input id="importoSpesa" type="number" step="0.01" placeholder="Importo (€)" aria-label="Importo spesa in euro" />
+        <button onclick="aggiungiSpesa()" aria-label="Salva spesa">Salva Spesa</button>
+        <ul id="listaSpese" aria-live="polite"></ul>
+      </div>
+      <!-- VEDI MOVIMENTI: pulsante barra full-width -->
+      <div class="vm-fullrow">
+        <button id="btnVediMovimenti" class="vm-barbtn" type="button" aria-haspopup="dialog" aria-controls="modalMovimenti">
+          👁️ VEDI MOVIMENTI DEL MESE
+        </button>
+      </div>
+
+    </section>
+
+    <!-- Obiettivo Mensile -->
+    <section class="columns base-section" aria-label="Obiettivo mensile">
+      <div>
+        <h2>🎯 Obiettivo Risparmio (mensile) – <span id="meseObiettivo">GENNAIO 2025</span></h2>
+        <input id="obiettivoMensile" type="number" step="0.01" placeholder="Es. 250 €" aria-label="Obiettivo mensile in euro" />
+        <button id="btnSalvaObiettivoMensile" onclick="salvaObiettivoMensile()" aria-label="Salva obiettivo mensile">
+          Salva Obiettivo Mensile
+        </button>
+        <small id="notaAuto" class="hint"></small>
+      </div>
+
+      <div>
+        <h2>🧪 Verifica Obiettivo (mensile)</h2>
+        <p id="messMens" class="muted" role="status" aria-live="polite">Nessun obiettivo impostato.</p>
+        <p id="diffMens"></p>
+        <div id="badgeMensile" class="badge hidden" aria-hidden="true">🏆 Badge Mensile: Obiettivo raggiunto!</div>
       </div>
     </section>
 
-    <section id="obiettivo">
-      <h3>🎯 Obiettivo Risparmio (mensile)</h3>
-      <input id="obiettivoInput" type="number" placeholder="Inserisci obiettivo">
-      <button id="btnObiettivo">Salva Obiettivo Mensile</button>
+    <!-- Obiettivo Cumulativo -->
+    <section class="columns base-section" aria-label="Obiettivo cumulativo">
+      <div>
+        <h2>🏁 Obiettivo Cumulativo (entro data)</h2>
+        <input id="importoCumulativo" type="number" step="0.01" placeholder="Totale da risparmiare (es. 900 €)" />
+
+        <div class="row">
+          <label for="meseInizioTarget">Mese inizio:</label>
+          <select id="meseInizioTarget"></select>
+          <label for="annoInizioTarget">Anno:</label>
+          <select id="annoInizioTarget"></select>
+        </div>
+
+        <div class="row">
+          <label for="meseTarget">Mese fine:</label>
+          <select id="meseTarget"></select>
+          <label for="annoTarget">Anno:</label>
+          <select id="annoTarget"></select>
+        </div>
+
+        <button onclick="salvaObiettivoCumulativo()">Salva Obiettivo Cumulativo</button>
+        <small class="hint">Se non imposti nulla: promemoria non invasivo.</small>
+      </div>
+
+      <div>
+        <h2>📈 Verifica Cumulativa</h2>
+        <div id="messaggioCumulativo" class="muted" role="status" aria-live="polite">
+          🔔 Hai un obiettivo cumulativo? Impostalo a sinistra.
+        </div>
+        <div id="dettaglioCumulativo" class="subtext"></div>
+        <div class="progress" aria-label="Avanzamento cumulativo" aria-valuemin="0" aria-valuemax="100">
+          <div id="progressBar" class="progress-bar" style="width:0%" aria-valuenow="0"></div>
+        </div>
+        <div id="badgeCumulativo" class="badge hidden" aria-hidden="true">🥇 Traguardo Cumulativo raggiunto!</div>
+      </div>
     </section>
 
-    <section id="verifica">
-      <h3>🖊️ Verifica Obiettivo (mensile)</h3>
-      <div id="verificaOutput"></div>
+    <!-- PREMIUM -->
+    <section class="premium-section" id="sezionePremium" aria-label="Funzionalità Premium">
+      <h2>🌟 Premium — Spese Ricorrenti</h2>
+
+      <!-- Spese annuali -->
+      <div class="premium-block">
+        <h3>📅 Annuali (rate divise su N mesi)</h3>
+        <input id="descAnnuale" type="text" placeholder="Descrizione (es. Assicurazione Auto)" />
+        <input id="impAnnuale" type="number" step="0.01" placeholder="Importo totale (€)" />
+        <div class="row">
+          <label for="mesiRate">Mesi di ripartizione:</label>
+          <input id="mesiRate" type="number" value="12" min="1" max="60" />
+        </div>
+        <div class="row">
+          <label for="meseAnnuale">Inizio:</label>
+          <select id="meseAnnuale"></select>
+          <label for="annoAnnuale">Anno:</label>
+          <select id="annoAnnuale"></select>
+        </div>
+        <button onclick="aggiungiAnnuale()">➕ Aggiungi voce annuale</button>
+        <ul id="listaAnnuali" class="lista-premium"></ul>
+      </div>
+
+      <!-- Spese mensili -->
+      <div class="premium-block">
+        <h3>💳 Mensili (quota fissa ogni mese)</h3>
+        <input id="descMensile" type="text" placeholder="Descrizione (es. Abbonamento Palestra)" />
+        <input id="impMensile" type="number" step="0.01" placeholder="Importo (€)" />
+        <div class="row">
+          <label for="meseMensile">Inizio:</label>
+          <select id="meseMensile"></select>
+          <label for="annoMensile">Anno:</label>
+          <select id="annoMensile"></select>
+        </div>
+        <button onclick="aggiungiMensile()">➕ Aggiungi voce mensile</button>
+        <small class="hint">Resta attiva ogni mese finché non la “stacchi” (stop dal mese successivo).</small>
+        <ul id="listaMensili" class="lista-premium"></ul>
+      </div>
     </section>
 
-    <section id="voce-mensile">
-      <h3>➕ Aggiungi voce mensile</h3>
-      <label for="meseInizio">Inizio:</label>
-      <select id="meseInizio"></select>
-      <select id="annoInizio"></select>
-      <button id="btnVoceMensile">Aggiungi voce mensile</button>
+    <!-- Azzeramento dati -->
+    <section aria-label="Strumenti sviluppatore">
+      <button onclick="azzeraTutto()" class="danger">🔄 AZZERA TUTTO (solo per test!)</button>
     </section>
-
-    <section id="reset">
-      <button id="btnReset">🔄 AZZERA TUTTO (solo per test!)</button>
-    </section>
-
-    <!-- 🔴 BLOCCO "MOVIMENTI DI ..." ELIMINATO QUI COME RICHIESTO -->
-  </main>
-
-  <script src="script.js?v=17"></script>
+  </div>
+  <!-- Modal 'Vedi Movimenti' -->
+  <div id="modalMovimenti" class="vm-modal" aria-hidden="true">
+    <div class="vm-modal__overlay" data-close="1"></div>
+    <div class="vm-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="vm-title" tabindex="-1">
+      <header class="vm-modal__header">
+        <h3 id="vm-title">Movimenti di <span id="vm-meseanno"></span></h3>
+        <button class="vm-close" aria-label="Chiudi" data-close="1">✖</button>
+      </header>
+      <div class="vm-modal__body">
+        <div class="vm-col">
+          <h4>Entrate</h4>
+          <ul id="vm-lista-entrate" class="vm-list"></ul>
+        </div>
+        <div class="vm-col">
+          <h4>Spese</h4>
+          <ul id="vm-lista-spese" class="vm-list"></ul>
+        </div>
+      </div>
+      <footer class="vm-modal__footer">
+        <div class="vm-totals">
+          <div>Totale entrate: <strong id="vm-tot-entrate"></strong></div>
+          <div>Totale spese: <strong id="vm-tot-spese"></strong></div>
+          <div>Saldo netto: <strong id="vm-saldo"></strong></div>
+        </div>
+        <button class="vm-ok" data-close="1" aria-label="Chiudi riepilogo">OK</button>
+      </footer>
+    </div>
+  </div>
+  <script src="script.js?v=20"></script>
 </body>
 </html>
