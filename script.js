@@ -299,38 +299,32 @@ function updateSaldoBox(){
   const m = periodoCorrente.mese, a = periodoCorrente.anno;
   const d = getPeriodoData(m, a);
 
-  // ========== 1) Totali mese ==========
+  // Totali mese
   const totEntrate = (d.entrate || []).reduce((s, e) => s + Number(e.importo || 0), 0);
   const totSpese   = (d.spese   || []).reduce((s, e) => s + Number(e.importo || 0), 0);
 
-  // ========== 2) Obiettivi (fallback a 0 se le funzioni non esistono) ==========
+  // Obiettivi (se non ci sono valori, restano 0)
   const obMensile = (typeof getObiettivoMensileManuale === "function")
     ? getObiettivoMensileManuale(d) : 0;
 
   const quotaNmesi = (typeof quotaCumulativoPerMese === "function")
     ? quotaCumulativoPerMese(m, a) : 0;
 
-  // ========== 3) Formule VERSIONE BASE ==========
-  // Mensile saldo Disponibile: Entrate – Uscite
+  // Calcoli Versione Base
   const mensileDisponibile = totEntrate - totSpese;
-
-  // Mensile saldo Contabile: Entrate – Uscite – Obiettivo Mensile – quota di obiettivo per N mesi
   const mensileContabile   = mensileDisponibile - obMensile - quotaNmesi;
+  const saldoTotale        = cumulativoAnnoBase(m, a);
 
-  // Saldo totale: cumulativo da Gennaio al mese selezionato di (Entrate - Uscite)
-  const saldoTotale = cumulativoAnnoBase(m, a);
-
-  // ========== 4) Scrittura UI ==========
-  // Adegua gli ID qui se i tuoi sono diversi.
-  setText('#saldo-disponibile', mensileDisponibile);
-  setText('#saldo-contabile',   mensileContabile);
-  setText('#saldo-totale',      saldoTotale);
-
-  // (facoltativo) mostra anche le componenti usate
-  setText('#obiettivo-mensile', obMensile);
-  setText('#quota-n-mesi',      quotaNmesi);
+  // Mostra i risultati dentro al box con id="saldo"
+  const saldoBox = document.querySelector('#saldo');
+  if(saldoBox){
+    saldoBox.innerHTML = `
+      <p>💶 Disponibile Mensile: <strong>${fmt(mensileDisponibile)}</strong></p>
+      <p>📘 Contabile Mensile: <strong>${fmt(mensileContabile)}</strong></p>
+      <p>💰 Saldo Totale: <strong>${fmt(saldoTotale)}</strong></p>
+    `;
+  }
 }
-
 // PREMIUM → aggiornata con la quota cumulativa
 else if (statoAbbonamento.versione === "premium") {
   saldoCont = saldoDisp - quotaCum;
