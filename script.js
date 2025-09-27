@@ -360,8 +360,6 @@ function updateSaldoBox(){
       mm.textContent = "Nessun obiettivo mensile impostato.";
     }
   }
-}
-
 function aggiornaCumulativoUI(){
   const msg = document.getElementById("messaggioCumulativo");
   const det = document.getElementById("dettaglioCumulativo");
