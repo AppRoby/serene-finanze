@@ -297,18 +297,38 @@ function updateLists(){
 
 function updateSaldoBox(){
   const m = periodoCorrente.mese, a = periodoCorrente.anno;
-  const mIdx = idxMeseFromName(m);
-  const d = getPeriodoData(m,a);
+  const d = getPeriodoData(m, a);
 
-const saldoDisp = saldoDisponibileOfNome(m,a);
-const obMesManuale = getObiettivoMensileManuale(d);
-const quotaCum = quotaCumulativoPerMese(m,a);
+  // ========== 1) Totali mese ==========
+  const totEntrate = (d.entrate || []).reduce((s, e) => s + Number(e.importo || 0), 0);
+  const totSpese   = (d.spese   || []).reduce((s, e) => s + Number(e.importo || 0), 0);
 
-let saldoCont;
+  // ========== 2) Obiettivi (fallback a 0 se le funzioni non esistono) ==========
+  const obMensile = (typeof getObiettivoMensileManuale === "function")
+    ? getObiettivoMensileManuale(d) : 0;
 
-// BASE → resta invariato
-if (statoAbbonamento.versione === "base") {
-  saldoCont = saldoDisp - obMesManuale - quotaCum;
+  const quotaNmesi = (typeof quotaCumulativoPerMese === "function")
+    ? quotaCumulativoPerMese(m, a) : 0;
+
+  // ========== 3) Formule VERSIONE BASE ==========
+  // Mensile saldo Disponibile: Entrate – Uscite
+  const mensileDisponibile = totEntrate - totSpese;
+
+  // Mensile saldo Contabile: Entrate – Uscite – Obiettivo Mensile – quota di obiettivo per N mesi
+  const mensileContabile   = mensileDisponibile - obMensile - quotaNmesi;
+
+  // Saldo totale: cumulativo da Gennaio al mese selezionato di (Entrate - Uscite)
+  const saldoTotale = cumulativoAnnoBase(m, a);
+
+  // ========== 4) Scrittura UI ==========
+  // Adegua gli ID qui se i tuoi sono diversi.
+  setText('#saldo-disponibile', mensileDisponibile);
+  setText('#saldo-contabile',   mensileContabile);
+  setText('#saldo-totale',      saldoTotale);
+
+  // (facoltativo) mostra anche le componenti usate
+  setText('#obiettivo-mensile', obMensile);
+  setText('#quota-n-mesi',      quotaNmesi);
 }
 
 // PREMIUM → aggiornata con la quota cumulativa
@@ -614,6 +634,54 @@ function fmtDateTime(ts){
     const mi = String(d.getMinutes()).padStart(2,'0');
     return `${dd}/${mm}/${yyyy} ${hh}:${mi}`;
   }catch(e){ return ""; }
+}
+// Scrive un numero formattato in un elemento (se esiste), con segno se negativo
+function setText(sel, value){
+  const el = document.querySelector(sel);
+  if(!el) return;
+  const v = Number(value || 0);
+  el.textContent = (v >= 0) ? fmt(v) : `-${fmt(Math.abs(v))}`;
+}
+
+// Cumulativo da Gennaio al mese selezionato dello stesso anno (Entrate - Uscite)
+function cumulativoAnnoBase(meseName, anno){
+  const MESI = ["Gennaio","Febbraio","Marzo","Aprile","Maggio","Giugno",
+                "Luglio","Agosto","Settembre","Ottobre","Novembre","Dicembre"];
+  const idx = MESI.indexOf(meseName);
+  if(idx < 0) return 0;
+
+  let tot = 0;
+  for(let i = 0; i <= idx; i++){
+    const data = getPeriodoData(MESI[i], anno);
+    const e = (data.entrate || []).reduce((s,x)=> s + Number(x.importo||0), 0);
+    const u = (data.spese   || []).reduce((s,x)=> s + Number(x.importo||0), 0);
+    tot += (e - u);
+  }
+  return tot;
+}
+// Scrive un numero formattato in un elemento (se esiste), con segno se negativo
+function setText(sel, value){
+  const el = document.querySelector(sel);
+  if(!el) return;
+  const v = Number(value || 0);
+  el.textContent = (v >= 0) ? fmt(v) : `-${fmt(Math.abs(v))}`;
+}
+
+// Cumulativo da Gennaio al mese selezionato dello stesso anno (Entrate - Uscite)
+function cumulativoAnnoBase(meseName, anno){
+  const MESI = ["Gennaio","Febbraio","Marzo","Aprile","Maggio","Giugno",
+                "Luglio","Agosto","Settembre","Ottobre","Novembre","Dicembre"];
+  const idx = MESI.indexOf(meseName);
+  if(idx < 0) return 0;
+
+  let tot = 0;
+  for(let i = 0; i <= idx; i++){
+    const data = getPeriodoData(MESI[i], anno);
+    const e = (data.entrate || []).reduce((s,x)=> s + Number(x.importo||0), 0);
+    const u = (data.spese   || []).reduce((s,x)=> s + Number(x.importo||0), 0);
+    tot += (e - u);
+  }
+  return tot;
 }
 
 
