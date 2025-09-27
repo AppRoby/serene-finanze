@@ -76,16 +76,28 @@ function setObiettivoMensileManuale(d, val){
   d.obiettivoMensileManuale = Number(val);
   d.obiettivoMensile = Number(val); // mantieni il vecchio campo per retrocompatibilità
 }
-function quotaCumulativoPerMese(meseNome, anno){
-  if(!obiettivoCumulativo) return 0;
-  const startN = periodToNum(obiettivoCumulativo.meseInizioIdx, obiettivoCumulativo.annoInizio);
-  const endN   = periodToNum(obiettivoCumulativo.meseTargetIdx, obiettivoCumulativo.annoTarget);
-  const curN   = periodToNum(idxMeseFromName(meseNome), anno);
-  if(curN < startN || curN > endN) return 0;
-  const mesi = endN - startN + 1;
-  return mesi>0 ? Number(obiettivoCumulativo.amount)/mesi : 0;
-}
+function quotaCumulativoPerMese(meseName, anno){
+  if(!obiettivoCumulativo || !obiettivoCumulativo.importo) return 0;
 
+  // indice del mese corrente (0..11) partendo dal nome
+  const mIdx = idxMeseFromName(meseName);
+  if(mIdx < 0) return 0;
+
+  // trasformo mese/anno in un "numero di periodo" assoluto: anno*12 + mese
+  const curN   = anno*12 + mIdx;
+  const startN = obiettivoCumulativo.annoInizio*12  + obiettivoCumulativo.meseInizioIdx;
+  const endN   = obiettivoCumulativo.annoTarget*12  + obiettivoCumulativo.meseTargetIdx;
+
+  // se il mese corrente è FUORI dall’intervallo, quota = 0
+  if(curN < startN || curN > endN) return 0;
+
+  // numero di mesi compresi nell’intervallo (inclusi gli estremi)
+  const numMesi = (endN - startN + 1);
+  if(numMesi <= 0) return 0;
+
+  // quota mensile da applicare in ciascun mese dell’intervallo
+  return obiettivoCumulativo.importo / numMesi;
+}
 /* =========================
    Calcoli
    ========================= */
@@ -303,6 +315,19 @@ function updateSaldoBox(){
 const saldoDisp = saldoDisponibileOfNome(m,a);
 const obMesManuale = getObiettivoMensileManuale(d);
 const quotaCum = quotaCumulativoPerMese(m,a);
+// nota: se sono fuori intervallo, lo scrivo accanto all'etichetta
+let notaQuota = "";
+if (obiettivoCumulativo && obiettivoCumulativo.importo){
+  const mIdx = idxMeseFromName(m);
+  const curN   = a*12 + mIdx;
+  const startN = obiettivoCumulativo.annoInizio*12 + obiettivoCumulativo.meseInizioIdx;
+  const endN   = obiettivoCumulativo.annoTarget*12 + obiettivoCumulativo.meseTargetIdx;
+  if (curN < startN || curN > endN) {
+    const MESI = ["Gennaio","Febbraio","Marzo","Aprile","Maggio","Giugno","Luglio","Agosto","Settembre","Ottobre","Novembre","Dicembre"];
+    const range = `${MESI[obiettivoCumulativo.meseInizioIdx]} ${obiettivoCumulativo.annoInizio}–${MESI[obiettivoCumulativo.meseTargetIdx]} ${obiettivoCumulativo.annoTarget}`;
+    notaQuota = ` <small class="muted">(fuori intervallo ${range})</small>`;
+  }
+}
 
 let saldoCont;
 
@@ -323,7 +348,7 @@ else if (statoAbbonamento.versione === "premium") {
       <div class="saldo-breakdown">
         <div class="rowline"><span>💸 Disponibile Mensile</span><strong>${fmt(saldoDisp)}</strong></div>
         <div class="rowline sub"><span>– Obiettivo mensile</span><span>${fmt(obMesManuale)}</span></div>
-        <div class="rowline sub"><span>– Quota cumulativo</span><span>${fmt(quotaCum)}</span></div>
+       <div class="rowline sub"><span>– Quota cumulativo${notaQuota}</span><span>${fmt(quotaCum)}</span></div>
         <div class="rowline total"><span>📘 Contabile Mensile</span><strong>${fmt(saldoCont)}</strong></div>
         <div class="rowline"><span>💰 Saldo Totale</span><strong>${fmt(saldoTot)}</strong></div>
       </div>
