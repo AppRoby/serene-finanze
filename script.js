@@ -325,10 +325,6 @@ function updateSaldoBox(){
     `;
   }
 }
-// PREMIUM → aggiornata con la quota cumulativa
-else if (statoAbbonamento.versione === "premium") {
-  saldoCont = saldoDisp - quotaCum;
-}
   const saldoTot  = saldoTotaleFinoA(mIdx,a);
 
   const saldoBox = document.getElementById("saldo");
