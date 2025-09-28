@@ -528,14 +528,24 @@ function aggiornaUI(){
 }
 
 function azzeraTutto(){
-  if(confirm("Vuoi davvero azzerare tutti i dati?")){
-    localStorage.clear();
-    datiPerPeriodo={}; obiettivoCumulativo=null; speseAnnuali=[]; speseMensili=[];
-    caricaDati(); popolaSelectMesiEAnni(); initAllDropdowns(); aggiornaUI();
-    alert("✅ Dati azzerati con successo!");
-  }
-}
+    if(confirm("Vuoi davvero azzerare tutti i dati?")){
+        localStorage.clear();
+        datiPerPeriodo={};
+        obiettivoCumulativo=null;
+        speseAnnuali=[];
+        speseMensili=[];
+        
+        // Svuoto anche il campo "Mesi di ripartizione"
+        document.getElementById("mesiRate").value = "";
 
+        caricaDati();
+        popolaSelectMesiEAnni();
+        initAllDropdowns();
+        aggiornaUI();
+        
+        alert("✅ Dati azzerati con successo!");
+    }
+}
 function init(){
   caricaDati();
   popolaSelectMesiEAnni();
