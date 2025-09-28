@@ -309,24 +309,69 @@ function updateLists(){
 
 function updateSaldoBox(){
   const m = periodoCorrente.mese, a = periodoCorrente.anno;
+  const d = getPeriodoData(m, a);
   const mIdx = idxMeseFromName(m);
-  const d = getPeriodoData(m,a);
 
-const saldoDisp = saldoDisponibileOfNome(m,a);
-const obMesManuale = getObiettivoMensileManuale(d);
-const quotaCum = quotaCumulativoPerMese(m,a);
-// nota: se sono fuori intervallo, lo scrivo accanto all'etichetta
-let notaQuota = "";
-if (obiettivoCumulativo && obiettivoCumulativo.importo){
-  const mIdx = idxMeseFromName(m);
-  const curN   = a*12 + mIdx;
-  const startN = obiettivoCumulativo.annoInizio*12 + obiettivoCumulativo.meseInizioIdx;
-  const endN   = obiettivoCumulativo.annoTarget*12 + obiettivoCumulativo.meseTargetIdx;
-  if (curN < startN || curN > endN) {
-    const MESI = ["Gennaio","Febbraio","Marzo","Aprile","Maggio","Giugno","Luglio","Agosto","Settembre","Ottobre","Novembre","Dicembre"];
-    const range = `${MESI[obiettivoCumulativo.meseInizioIdx]} ${obiettivoCumulativo.annoInizio}–${MESI[obiettivoCumulativo.meseTargetIdx]} ${obiettivoCumulativo.annoTarget}`;
-    notaQuota = ` <small class="muted">(fuori intervallo ${range})</small>`;
+  // Totali mese (entrate/uscite)
+  const totEntrate = (d.entrate||[]).reduce((s,e)=>s+Number(e.importo||0),0);
+  const totSpese   = (d.spese  ||[]).reduce((s,e)=>s+Number(e.importo||0),0);
+
+  // Obiettivi (Base + Cumulativo)
+  const obMensile = (typeof getObiettivoMensileManuale==="function") ? getObiettivoMensileManuale(d) : 0;
+  const quotaCum  = quotaCumulativoPerMese(m,a);
+
+  // Nota "fuori intervallo" per il cumulativo (se serve)
+  let notaQuota = "";
+  if (obiettivoCumulativo && obiettivoCumulativo.importo){
+    const curN   = a*12 + mIdx;
+    const startN = obiettivoCumulativo.annoInizio*12 + obiettivoCumulativo.meseInizioIdx;
+    const endN   = obiettivoCumulativo.annoTarget*12 + obiettivoCumulativo.meseTargetIdx;
+    if (curN < startN || curN > endN) {
+      const MESI = ["Gennaio","Febbraio","Marzo","Aprile","Maggio","Giugno","Luglio","Agosto","Settembre","Ottobre","Novembre","Dicembre"];
+      const range = `${MESI[obiettivoCumulativo.meseInizioIdx]} ${obiettivoCumulativo.annoInizio}–${MESI[obiettivoCumulativo.meseTargetIdx]} ${obiettivoCumulativo.annoTarget}`;
+      notaQuota = ` <small class="muted">(fuori intervallo ${range})</small>`;
+    }
   }
+
+  // Quote Premium (spese ricorrenti)
+  const quotaRip  = quotaSpeseRipartitePerMese(m,a);
+  const quotaMens = speseMensiliPerMese(m,a);
+
+  // Logiche di calcolo
+  let mensileDisponibile, mensileContabile, saldoTotale;
+  if(statoAbbonamento && statoAbbonamento.versione === "premium"){
+    // PREMIUM
+    mensileDisponibile = totEntrate - totSpese - quotaRip - quotaMens;
+    mensileContabile   = mensileDisponibile - obMensile - quotaCum;
+    saldoTotale        = cumulativoAnnoPremium(m,a);
+  } else {
+    // BASE
+    mensileDisponibile = totEntrate - totSpese;
+    mensileContabile   = mensileDisponibile - obMensile - quotaCum;
+    saldoTotale        = cumulativoAnnoBase(m,a);
+  }
+
+  // Render nel box #saldo
+  const saldoBox = document.getElementById("saldo");
+  if(!saldoBox) return;
+
+  let righe = `
+    <div class="rowline"><span>💶 Disponibile Mensile</span><span>${fmt(mensileDisponibile)}</span></div>
+    <div class="rowline sub"><span>– Obiettivo mensile</span><span>${fmt(obMensile)}</span></div>
+    <div class="rowline sub"><span>– Quota cumulativo${notaQuota}</span><span>${fmt(quotaCum)}</span></div>
+  `;
+  if(statoAbbonamento && statoAbbonamento.versione === "premium"){
+    righe += `
+      <div class="rowline sub"><span>– Spese ripartizione</span><span>${fmt(quotaRip)}</span></div>
+      <div class="rowline sub"><span>– Spese mensili</span><span>${fmt(quotaMens)}</span></div>
+    `;
+  }
+  righe += `
+    <div class="rowline focus"><span>📘 Contabile Mensile</span><span>${fmt(mensileContabile)}</span></div>
+    <div class="rowline"><span>💰 Saldo Totale</span><span>${fmt(saldoTotale)}</span></div>
+  `;
+
+  saldoBox.innerHTML = righe;
 }
 
 let saldoCont;
@@ -649,5 +694,76 @@ function fmtDateTime(ts){
     const mi = String(d.getMinutes()).padStart(2,'0');
     return `${dd}/${mm}/${yyyy} ${hh}:${mi}`;
   }catch(e){ return ""; }
+}
+// === PREMIUM: helpers (mini-funzioni di supporto) ===
+
+// Somma la quota mensile di TUTTE le spese "annuali" (ripartite su N mesi) attive nel mese corrente
+function quotaSpeseRipartitePerMese(meseName, anno){
+  if(!Array.isArray(speseAnnuali) || speseAnnuali.length === 0) return 0;
+
+  const MESI = ["Gennaio","Febbraio","Marzo","Aprile","Maggio","Giugno","Luglio","Agosto","Settembre","Ottobre","Novembre","Dicembre"];
+  const meseIdx = MESI.indexOf(meseName);
+  if(meseIdx < 0) return 0;
+
+  const curN = anno*12 + meseIdx;
+
+  let tot = 0;
+  for(const it of speseAnnuali){
+    const importoTot = Number(it.importo || it.importoTotale || it.totale || it.imp || 0);
+    const mesi       = Number(it.mesi || it.mesiRate || it.mesiRipartizione || 0);
+    const startMIdx  = Number(it.meseInizioIdx ?? it.meseIdx ?? 0);
+    const startAnno  = Number(it.annoInizio ?? it.anno ?? anno);
+
+    if(importoTot <= 0 || mesi <= 0) continue;
+
+    const startN = startAnno*12 + startMIdx;
+    const endN   = startN + (mesi - 1);
+    if(curN >= startN && curN <= endN){
+      tot += importoTot / mesi;
+    }
+  }
+  return tot;
+}
+
+// Somma le spese MENSILI fisse attive nel mese corrente
+function speseMensiliPerMese(meseName, anno){
+  if(!Array.isArray(speseMensili) || speseMensili.length === 0) return 0;
+
+  const MESI = ["Gennaio","Febbraio","Marzo","Aprile","Maggio","Giugno","Luglio","Agosto","Settembre","Ottobre","Novembre","Dicembre"];
+  const meseIdx = MESI.indexOf(meseName);
+  if(meseIdx < 0) return 0;
+
+  const curN = anno*12 + meseIdx;
+
+  let tot = 0;
+  for(const it of speseMensili){
+    const importo    = Number(it.importo || it.imp || 0);
+    const startMIdx  = Number(it.meseInizioIdx ?? it.meseIdx ?? 0);
+    const startAnno  = Number(it.annoInizio ?? it.anno ?? anno);
+    const stopN      = (it.stopAnno!=null && it.stopMeseIdx!=null) ? (Number(it.stopAnno)*12 + Number(it.stopMeseIdx)) : null;
+
+    const startN = startAnno*12 + startMIdx;
+    const attiva = curN >= startN && (stopN == null || curN <= stopN);
+    if(attiva) tot += importo;
+  }
+  return tot;
+}
+
+// Cumulativo Premium: da Gennaio al mese selezionato di (Entrate - Uscite - Spese ripartite - Spese mensili)
+function cumulativoAnnoPremium(meseName, anno){
+  const MESI = ["Gennaio","Febbraio","Marzo","Aprile","Maggio","Giugno","Luglio","Agosto","Settembre","Ottobre","Novembre","Dicembre"];
+  const idx = MESI.indexOf(meseName);
+  if(idx < 0) return 0;
+
+  let tot = 0;
+  for(let i=0; i<=idx; i++){
+    const d = getPeriodoData(MESI[i], anno);
+    const e = (d.entrate||[]).reduce((s,x)=>s+Number(x.importo||0),0);
+    const u = (d.spese  ||[]).reduce((s,x)=>s+Number(x.importo||0),0);
+    const qRip  = quotaSpeseRipartitePerMese(MESI[i], anno);
+    const qMens = speseMensiliPerMese(MESI[i], anno);
+    tot += (e - u - qRip - qMens);
+  }
+  return tot;
 }
 
