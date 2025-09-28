@@ -373,55 +373,6 @@ function updateSaldoBox(){
 
   saldoBox.innerHTML = righe;
 }
-
-let saldoCont;
-
-// BASE → resta invariato
-if (statoAbbonamento.versione === "base") {
-  saldoCont = saldoDisp - obMesManuale - quotaCum;
-}
-
-// PREMIUM → aggiornata con la quota cumulativa
-else if (statoAbbonamento.versione === "premium") {
-  saldoCont = saldoDisp - quotaCum;
-}
-  const saldoTot  = saldoTotaleFinoA(mIdx,a);
-
-  const saldoBox = document.getElementById("saldo");
-  if(saldoBox){
-    saldoBox.innerHTML = `
-      <div class="saldo-breakdown">
-        <div class="rowline"><span>💸 Disponibile Mensile</span><strong>${fmt(saldoDisp)}</strong></div>
-        <div class="rowline sub"><span>– Obiettivo mensile</span><span>${fmt(obMesManuale)}</span></div>
-       <div class="rowline sub"><span>– Quota cumulativo${notaQuota}</span><span>${fmt(quotaCum)}</span></div>
-        <div class="rowline total"><span>📘 Contabile Mensile</span><strong>${fmt(saldoCont)}</strong></div>
-        <div class="rowline"><span>💰 Saldo Totale</span><strong>${fmt(saldoTot)}</strong></div>
-      </div>
-    `;
-  }
-
-  // Verifica mensile
-  const mm = document.getElementById("messMens");
-  const df = document.getElementById("diffMens");
-  if(mm && df){
-    const diff = saldoDisp - obMesManuale;
-    df.textContent = "";
-    if(obMesManuale > 0){
-      if(diff >= 0){
-        mm.className = "verde";
-        mm.textContent = `✅ Obiettivo mensile di ${fmt(obMesManuale)} raggiunto a ${cap(m)} ${a}.`;
-        if(diff>0) df.textContent = `Hai superato di ${fmt(diff)}.`;
-      }else{
-        mm.className = "neutro";
-        mm.textContent = `⚠️ Ti mancano ${fmt(Math.abs(diff))} per arrivare a ${fmt(obMesManuale)} a ${cap(m)} ${a}.`;
-      }
-    }else{
-      mm.className = "muted";
-      mm.textContent = "Nessun obiettivo mensile impostato.";
-    }
-  }
-}
-
 function aggiornaCumulativoUI(){
   const msg = document.getElementById("messaggioCumulativo");
   const det = document.getElementById("dettaglioCumulativo");
