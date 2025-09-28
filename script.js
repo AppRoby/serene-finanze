@@ -766,4 +766,10 @@ function cumulativoAnnoPremium(meseName, anno){
   }
   return tot;
 }
+// Inizializzazione all'avvio (una sola volta)
+document.addEventListener("DOMContentLoaded", () => {
+  popolaSelectMesiEAnni();  // riempie #mese e #anno (e gli altri select collegati)
+  initAllDropdowns();       // ricrea i dropdown personalizzati (se li usi)
+  aggiornaUI();             // disegna il saldo e il resto
+});
 
