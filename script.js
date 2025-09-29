@@ -348,11 +348,11 @@ function updateSaldoBox(){
     // BASE
     mensileDisponibile = totEntrate - totSpese;
     mensileContabile   = mensileDisponibile - obMensile - quotaCum;
-    saldoTotale        = cumulativoAnnoBase(m,a);
+    saldoTotale = saldoTotaleFinoA(mIdx, a);
   }
 
-  // Render nel box #saldo
-  const saldoBox = document.getElementById("saldo");
+  // Render nel box #
+  const saldoBox = document.getElementById("");
   if(!saldoBox) return;
 
   let righe = `
@@ -368,7 +368,7 @@ function updateSaldoBox(){
   }
   righe += `
     <div class="rowline focus"><span>📘 Contabile Mensile</span><span>${fmt(mensileContabile)}</span></div>
-    <div class="rowline"><span>💰 Saldo Totale</span><span>${fmt(saldoTotale)}</span></div>
+    <div class="rowline"><span>💰  Totale</span><span>${fmt(saldoTotale)}</span></div>
   `;
 
   saldoBox.innerHTML = righe;
@@ -589,20 +589,20 @@ if(ULspe) ULspe.innerHTML = d.spese.map(it =>
     <span class="importo-rosso">-${fmt(Math.abs(it.importo))}</span>
   </li>`
 ).join("");
-  // Totali e saldo netto
+  // Totali e  netto
   const totEntr = d.entrate.reduce((s,e)=>s+Number(e.importo||0),0);
   const totSpe  = d.spese.reduce((s,e)=>s+Number(e.importo||0),0);
-  const saldo   = saldoDisponibileOfNome(m, a); // include eventuali spese Premium
+  const    = saldoDisponibileOfNome(m, a); // include eventuali spese Premium
 
   const elME = modal.querySelector("#vm-meseanno");
   const elTE = modal.querySelector("#vm-tot-entrate");
   const elTS = modal.querySelector("#vm-tot-spese");
-  const elSN = modal.querySelector("#vm-saldo");
+  const elSN = modal.querySelector("#vm-");
 
   if(elME) elME.textContent = cap(m) + " " + a;
   if(elTE) elTE.textContent = fmt(totEntr);
   if(elTS) elTS.textContent = fmt(totSpe);
-  if(elSN) elSN.textContent = (saldo>=0? fmt(saldo) : `-${fmt(Math.abs(saldo))}`);
+  if(elSN) elSN.textContent = (>=0? fmt() : `-${fmt(Math.abs())}`);
 
   // Apri modal
   modal.classList.add("is-open");
@@ -721,6 +721,6 @@ function cumulativoAnnoPremium(meseName, anno){
 document.addEventListener("DOMContentLoaded", () => {
   popolaSelectMesiEAnni();  // riempie #mese e #anno (e gli altri select collegati)
   initAllDropdowns();       // ricrea i dropdown personalizzati (se li usi)
-  aggiornaUI();             // disegna il saldo e il resto
+  aggiornaUI();             // disegna il  e il resto
 });
 
