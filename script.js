@@ -352,7 +352,7 @@ function updateSaldoBox(){
   }
 
   // Render nel box #
-  const saldoBox = document.getElementById("");
+  const saldoBox = document.getElementById("saldo");
   if(!saldoBox) return;
 
   let righe = `
@@ -592,18 +592,19 @@ if(ULspe) ULspe.innerHTML = d.spese.map(it =>
   // Totali e  netto
   const totEntr = d.entrate.reduce((s,e)=>s+Number(e.importo||0),0);
   const totSpe  = d.spese.reduce((s,e)=>s+Number(e.importo||0),0);
-  const    = saldoDisponibileOfNome(m, a); // include eventuali spese Premium
+  const saldoNetto = saldoDisponibileOfNome(m, a); // include eventuali spese Premium
 
-  const elME = modal.querySelector("#vm-meseanno");
-  const elTE = modal.querySelector("#vm-tot-entrate");
-  const elTS = modal.querySelector("#vm-tot-spese");
-  const elSN = modal.querySelector("#vm-");
+const elME = modal.querySelector("#vm-meseanno");
+const elTE = modal.querySelector("#vm-tot-entrate");
+const elTS = modal.querySelector("#vm-tot-spese");
+const elSN = modal.querySelector("#vm-saldonetto");
 
-  if(elME) elME.textContent = cap(m) + " " + a;
-  if(elTE) elTE.textContent = fmt(totEntr);
-  if(elTS) elTS.textContent = fmt(totSpe);
-  if(elSN) elSN.textContent = (>=0? fmt() : `-${fmt(Math.abs())}`);
-
+if(elME) elME.textContent = cap(m) + " " + a;
+if(elTE) elTE.textContent = fmt(totEntr);
+if(elTS) elTS.textContent = fmt(totSpe);
+if(elSN) elSN.textContent = saldoNetto >= 0
+    ? fmt(saldoNetto)
+    : `-${fmt(Math.abs(saldoNetto))}`;
   // Apri modal
   modal.classList.add("is-open");
   const title = modal.querySelector("#vm-title");
