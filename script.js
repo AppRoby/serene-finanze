@@ -212,7 +212,7 @@ function salvaObiettivoCumulativo(){
   const eIdx = idxMeseFromName(meseFine);
   const mesiRim = (annoFine-annoInizio)*12 + (eIdx - sIdx) + 1;
   if(mesiRim<=0){ alert("Periodo non valido. Correggi le date."); return; }
-  obiettivoCumulativo = { amount: imp, meseInizioIdx: sIdx, annoInizio, meseTargetIdx: eIdx, annoTarget: annoFine };
+  obiettivoCumulativo = { importo: imp, meseInizioIdx: sIdx, annoInizio, meseTargetIdx: eIdx, annoTarget: annoFine };
   salvaCumulativo();
   aggiornaUI();
 }
