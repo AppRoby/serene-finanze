@@ -212,7 +212,7 @@ function salvaObiettivoCumulativo(){
   const eIdx = idxMeseFromName(meseFine);
   const mesiRim = (annoFine-annoInizio)*12 + (eIdx - sIdx) + 1;
   if(mesiRim<=0){ alert("Periodo non valido. Correggi le date."); return; }
-  obiettivoCumulativo = { importo: imp, meseInizioIdx: sIdx, annoInizio, meseTargetIdx: eIdx, annoTarget: annoFine };
+  obiettivoCumulativo = { amount: imp, meseInizioIdx: sIdx, annoInizio, meseTargetIdx: eIdx, annoTarget: annoFine };
   salvaCumulativo();
   aggiornaUI();
 }
@@ -307,98 +307,76 @@ function updateLists(){
   }
 }
 
-function updateSaldoBox() {
-  const m = periodoCorrente.mese;
-  const a = periodoCorrente.anno;
-  const d = getPeriodoData(m, a);
+function updateSaldoBox(){
+  const m = periodoCorrente.mese, a = periodoCorrente.anno;
   const mIdx = idxMeseFromName(m);
+  const d = getPeriodoData(m,a);
 
-  // --- Totali mese (entrate / uscite)
-  const totEntrate = (d.entrate || []).reduce((s, e) => s + Number(e.importo || 0), 0);
-  const totSpese   = (d.spese   || []).reduce((s, e) => s + Number(e.importo || 0), 0);
-
-  // --- Obiettivi
-  const obMensile = getObiettivoMensileManuale(d);
-  const quotaCum  = quotaCumulativoPerMese(m, a);
-
-  // --- Spese Premium
-  const quotaRip  = quotaSpeseRipartitePerMese(m, a);
-  const quotaMens = speseMensiliPerMese(m, a);
-
-  // --- Calcoli principali
-  const mensileDisponibile = totEntrate - (totSpese + quotaRip + quotaMens);
-  const mensileContabile   = mensileDisponibile - (obMensile + quotaCum);
-
-  // --- Saldo totale disponibile (somma cumulata fino al mese corrente)
-  let saldoTotale = 0;
-  for (const k in datiPerPeriodo) {
-    const [mName, aStr] = k.split("-");
-    const aNum = Number(aStr);
-    const idx = idxMeseFromName(mName);
-    if (aNum < a || (aNum === a && idx <= mIdx)) {
-      const dK = getPeriodoData(mName, aNum);
-      const eK = dK.entrate.reduce((s, e) => s + Number(e.importo), 0);
-      const uK = dK.spese.reduce((s, e) => s + Number(e.importo), 0);
-      const qRip = quotaSpeseRipartitePerMese(mName, aNum);
-      const qMens = speseMensiliPerMese(mName, aNum);
-      saldoTotale += (eK - (uK + qRip + qMens));
-    }
+const saldoDisp = saldoDisponibileOfNome(m,a);
+const obMesManuale = getObiettivoMensileManuale(d);
+const quotaCum = quotaCumulativoPerMese(m,a);
+// nota: se sono fuori intervallo, lo scrivo accanto all'etichetta
+let notaQuota = "";
+if (obiettivoCumulativo && obiettivoCumulativo.importo){
+  const mIdx = idxMeseFromName(m);
+  const curN   = a*12 + mIdx;
+  const startN = obiettivoCumulativo.annoInizio*12 + obiettivoCumulativo.meseInizioIdx;
+  const endN   = obiettivoCumulativo.annoTarget*12 + obiettivoCumulativo.meseTargetIdx;
+  if (curN < startN || curN > endN) {
+    const MESI = ["Gennaio","Febbraio","Marzo","Aprile","Maggio","Giugno","Luglio","Agosto","Settembre","Ottobre","Novembre","Dicembre"];
+    const range = `${MESI[obiettivoCumulativo.meseInizioIdx]} ${obiettivoCumulativo.annoInizio}–${MESI[obiettivoCumulativo.meseTargetIdx]} ${obiettivoCumulativo.annoTarget}`;
+    notaQuota = ` <small class="muted">(fuori intervallo ${range})</small>`;
   }
-
-  // --- Mostra i risultati nel box saldo
-  const saldoBox = document.getElementById("saldo");
-  if (!saldoBox) return;
-
-  saldoBox.innerHTML = `
-    <div class="rowline"><span>💶 Disponibile Mensile</span><span>${fmt(mensileDisponibile)}</span></div>
-    <div class="rowline sub"><span>– Obiettivo mensile</span><span>${fmt(obMensile)}</span></div>
-    <div class="rowline sub"><span>– Quota cumulativo</span><span>${fmt(quotaCum)}</span></div>
-    <div class="rowline sub"><span>– Spese ripartizione</span><span>${fmt(quotaRip)}</span></div>
-    <div class="rowline sub"><span>– Spese mensili</span><span>${fmt(quotaMens)}</span></div>
-    <div class="rowline focus"><span>📘 Contabile Mensile</span><span>${fmt(mensileContabile)}</span></div>
-    <div class="rowline"><span>💰 Saldo Totale</span><span>${fmt(saldoTotale)}</span></div>
-  `;
 }
-  // Quote Premium (spese ricorrenti)
-  const quotaRip  = quotaSpeseRipartitePerMese(m,a);
-  const quotaMens = speseMensiliPerMese(m,a);
 
-  // Logiche di calcolo
-  let mensileDisponibile, mensileContabile, saldoTotale;
-  if(statoAbbonamento && statoAbbonamento.versione === "premium"){
-    // PREMIUM
-    mensileDisponibile = totEntrate - totSpese - quotaRip - quotaMens;
-    mensileContabile   = mensileDisponibile - obMensile - quotaCum;
-    saldoTotale        = cumulativoAnnoPremium(m,a);
-  } else {
-    // BASE
-    mensileDisponibile = totEntrate - totSpese;
-    mensileContabile   = mensileDisponibile - obMensile - quotaCum;
-    saldoTotale = saldoTotaleFinoA(mIdx, a);
-  }
+let saldoCont;
 
-  // Render nel box #
+// BASE → resta invariato
+if (statoAbbonamento.versione === "base") {
+  saldoCont = saldoDisp - obMesManuale - quotaCum;
+}
+
+// PREMIUM → aggiornata con la quota cumulativa
+else if (statoAbbonamento.versione === "premium") {
+  saldoCont = saldoDisp - quotaCum;
+}
+  const saldoTot  = saldoTotaleFinoA(mIdx,a);
+
   const saldoBox = document.getElementById("saldo");
-  if(!saldoBox) return;
-
-  let righe = `
-    <div class="rowline"><span>💶 Disponibile Mensile</span><span>${fmt(mensileDisponibile)}</span></div>
-    <div class="rowline sub"><span>– Obiettivo mensile</span><span>${fmt(obMensile)}</span></div>
-    <div class="rowline sub"><span>– Quota cumulativo${notaQuota}</span><span>${fmt(quotaCum)}</span></div>
-  `;
-  if(statoAbbonamento && statoAbbonamento.versione === "premium"){
-    righe += `
-      <div class="rowline sub"><span>– Spese ripartizione</span><span>${fmt(quotaRip)}</span></div>
-      <div class="rowline sub"><span>– Spese mensili</span><span>${fmt(quotaMens)}</span></div>
+  if(saldoBox){
+    saldoBox.innerHTML = `
+      <div class="saldo-breakdown">
+        <div class="rowline"><span>💸 Disponibile Mensile</span><strong>${fmt(saldoDisp)}</strong></div>
+        <div class="rowline sub"><span>– Obiettivo mensile</span><span>${fmt(obMesManuale)}</span></div>
+       <div class="rowline sub"><span>– Quota cumulativo${notaQuota}</span><span>${fmt(quotaCum)}</span></div>
+        <div class="rowline total"><span>📘 Contabile Mensile</span><strong>${fmt(saldoCont)}</strong></div>
+        <div class="rowline"><span>💰 Saldo Totale</span><strong>${fmt(saldoTot)}</strong></div>
+      </div>
     `;
   }
-  righe += `
-    <div class="rowline focus"><span>📘 Contabile Mensile</span><span>${fmt(mensileContabile)}</span></div>
-    <div class="rowline"><span>💰  Totale</span><span>${fmt(saldoTotale)}</span></div>
-  `;
 
-  saldoBox.innerHTML = righe;
+  // Verifica mensile
+  const mm = document.getElementById("messMens");
+  const df = document.getElementById("diffMens");
+  if(mm && df){
+    const diff = saldoDisp - obMesManuale;
+    df.textContent = "";
+    if(obMesManuale > 0){
+      if(diff >= 0){
+        mm.className = "verde";
+        mm.textContent = `✅ Obiettivo mensile di ${fmt(obMesManuale)} raggiunto a ${cap(m)} ${a}.`;
+        if(diff>0) df.textContent = `Hai superato di ${fmt(diff)}.`;
+      }else{
+        mm.className = "neutro";
+        mm.textContent = `⚠️ Ti mancano ${fmt(Math.abs(diff))} per arrivare a ${fmt(obMesManuale)} a ${cap(m)} ${a}.`;
+      }
+    }else{
+      mm.className = "muted";
+      mm.textContent = "Nessun obiettivo mensile impostato.";
+    }
+  }
 }
+
 function aggiornaCumulativoUI(){
   const msg = document.getElementById("messaggioCumulativo");
   const det = document.getElementById("dettaglioCumulativo");
@@ -615,22 +593,21 @@ if(ULspe) ULspe.innerHTML = d.spese.map(it =>
     <span class="importo-rosso">-${fmt(Math.abs(it.importo))}</span>
   </li>`
 ).join("");
-  // Totali e  netto
+  // Totali e saldo netto
   const totEntr = d.entrate.reduce((s,e)=>s+Number(e.importo||0),0);
   const totSpe  = d.spese.reduce((s,e)=>s+Number(e.importo||0),0);
-  const saldoNetto = saldoDisponibileOfNome(m, a); // include eventuali spese Premium
+  const saldo   = saldoDisponibileOfNome(m, a); // include eventuali spese Premium
 
-const elME = modal.querySelector("#vm-meseanno");
-const elTE = modal.querySelector("#vm-tot-entrate");
-const elTS = modal.querySelector("#vm-tot-spese");
-const elSN = modal.querySelector("#vm-saldonetto");
+  const elME = modal.querySelector("#vm-meseanno");
+  const elTE = modal.querySelector("#vm-tot-entrate");
+  const elTS = modal.querySelector("#vm-tot-spese");
+  const elSN = modal.querySelector("#vm-saldo");
 
-if(elME) elME.textContent = cap(m) + " " + a;
-if(elTE) elTE.textContent = fmt(totEntr);
-if(elTS) elTS.textContent = fmt(totSpe);
-if(elSN) elSN.textContent = saldoNetto >= 0
-    ? fmt(saldoNetto)
-    : `-${fmt(Math.abs(saldoNetto))}`;
+  if(elME) elME.textContent = cap(m) + " " + a;
+  if(elTE) elTE.textContent = fmt(totEntr);
+  if(elTS) elTS.textContent = fmt(totSpe);
+  if(elSN) elSN.textContent = (saldo>=0? fmt(saldo) : `-${fmt(Math.abs(saldo))}`);
+
   // Apri modal
   modal.classList.add("is-open");
   const title = modal.querySelector("#vm-title");
@@ -673,81 +650,3 @@ function fmtDateTime(ts){
     return `${dd}/${mm}/${yyyy} ${hh}:${mi}`;
   }catch(e){ return ""; }
 }
-// === PREMIUM: helpers (mini-funzioni di supporto) ===
-
-// Somma la quota mensile di TUTTE le spese "annuali" (ripartite su N mesi) attive nel mese corrente
-function quotaSpeseRipartitePerMese(meseName, anno){
-  if(!Array.isArray(speseAnnuali) || speseAnnuali.length === 0) return 0;
-
-  const MESI = ["Gennaio","Febbraio","Marzo","Aprile","Maggio","Giugno","Luglio","Agosto","Settembre","Ottobre","Novembre","Dicembre"];
-  const meseIdx = MESI.indexOf(meseName);
-  if(meseIdx < 0) return 0;
-
-  const curN = anno*12 + meseIdx;
-
-  let tot = 0;
-  for(const it of speseAnnuali){
-    const importoTot = Number(it.importo || it.importoTotale || it.totale || it.imp || 0);
-    const mesi       = Number(it.mesi || it.mesiRate || it.mesiRipartizione || 0);
-    const startMIdx  = Number(it.meseInizioIdx ?? it.meseIdx ?? 0);
-    const startAnno  = Number(it.annoInizio ?? it.anno ?? anno);
-
-    if(importoTot <= 0 || mesi <= 0) continue;
-
-    const startN = startAnno*12 + startMIdx;
-    const endN   = startN + (mesi - 1);
-    if(curN >= startN && curN <= endN){
-      tot += importoTot / mesi;
-    }
-  }
-  return tot;
-}
-
-// Somma le spese MENSILI fisse attive nel mese corrente
-function speseMensiliPerMese(meseName, anno){
-  if(!Array.isArray(speseMensili) || speseMensili.length === 0) return 0;
-
-  const MESI = ["Gennaio","Febbraio","Marzo","Aprile","Maggio","Giugno","Luglio","Agosto","Settembre","Ottobre","Novembre","Dicembre"];
-  const meseIdx = MESI.indexOf(meseName);
-  if(meseIdx < 0) return 0;
-
-  const curN = anno*12 + meseIdx;
-
-  let tot = 0;
-  for(const it of speseMensili){
-    const importo    = Number(it.importo || it.imp || 0);
-    const startMIdx  = Number(it.meseInizioIdx ?? it.meseIdx ?? 0);
-    const startAnno  = Number(it.annoInizio ?? it.anno ?? anno);
-    const stopN      = (it.stopAnno!=null && it.stopMeseIdx!=null) ? (Number(it.stopAnno)*12 + Number(it.stopMeseIdx)) : null;
-
-    const startN = startAnno*12 + startMIdx;
-    const attiva = curN >= startN && (stopN == null || curN <= stopN);
-    if(attiva) tot += importo;
-  }
-  return tot;
-}
-
-// Cumulativo Premium: da Gennaio al mese selezionato di (Entrate - Uscite - Spese ripartite - Spese mensili)
-function cumulativoAnnoPremium(meseName, anno){
-  const MESI = ["Gennaio","Febbraio","Marzo","Aprile","Maggio","Giugno","Luglio","Agosto","Settembre","Ottobre","Novembre","Dicembre"];
-  const idx = MESI.indexOf(meseName);
-  if(idx < 0) return 0;
-
-  let tot = 0;
-  for(let i=0; i<=idx; i++){
-    const d = getPeriodoData(MESI[i], anno);
-    const e = (d.entrate||[]).reduce((s,x)=>s+Number(x.importo||0),0);
-    const u = (d.spese  ||[]).reduce((s,x)=>s+Number(x.importo||0),0);
-    const qRip  = quotaSpeseRipartitePerMese(MESI[i], anno);
-    const qMens = speseMensiliPerMese(MESI[i], anno);
-    tot += (e - u - qRip - qMens);
-  }
-  return tot;
-}
-// Inizializzazione all'avvio (una sola volta)
-document.addEventListener("DOMContentLoaded", () => {
-  popolaSelectMesiEAnni();  // riempie #mese e #anno (e gli altri select collegati)
-  initAllDropdowns();       // ricrea i dropdown personalizzati (se li usi)
-  aggiornaUI();             // disegna il  e il resto
-});
-
