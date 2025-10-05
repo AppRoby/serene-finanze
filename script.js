@@ -307,32 +307,58 @@ function updateLists(){
   }
 }
 
-function updateSaldoBox(){
-  const m = periodoCorrente.mese, a = periodoCorrente.anno;
+function updateSaldoBox() {
+  const m = periodoCorrente.mese;
+  const a = periodoCorrente.anno;
   const d = getPeriodoData(m, a);
   const mIdx = idxMeseFromName(m);
 
-  // Totali mese (entrate/uscite)
-  const totEntrate = (d.entrate||[]).reduce((s,e)=>s+Number(e.importo||0),0);
-  const totSpese   = (d.spese  ||[]).reduce((s,e)=>s+Number(e.importo||0),0);
+  // --- Totali mese (entrate / uscite)
+  const totEntrate = (d.entrate || []).reduce((s, e) => s + Number(e.importo || 0), 0);
+  const totSpese   = (d.spese   || []).reduce((s, e) => s + Number(e.importo || 0), 0);
 
-  // Obiettivi (Base + Cumulativo)
-  const obMensile = (typeof getObiettivoMensileManuale==="function") ? getObiettivoMensileManuale(d) : 0;
-  const quotaCum  = quotaCumulativoPerMese(m,a);
+  // --- Obiettivi
+  const obMensile = getObiettivoMensileManuale(d);
+  const quotaCum  = quotaCumulativoPerMese(m, a);
 
-  // Nota "fuori intervallo" per il cumulativo (se serve)
-  let notaQuota = "";
-  if (obiettivoCumulativo && obiettivoCumulativo.importo){
-    const curN   = a*12 + mIdx;
-    const startN = obiettivoCumulativo.annoInizio*12 + obiettivoCumulativo.meseInizioIdx;
-    const endN   = obiettivoCumulativo.annoTarget*12 + obiettivoCumulativo.meseTargetIdx;
-    if (curN < startN || curN > endN) {
-      const MESI = ["Gennaio","Febbraio","Marzo","Aprile","Maggio","Giugno","Luglio","Agosto","Settembre","Ottobre","Novembre","Dicembre"];
-      const range = `${MESI[obiettivoCumulativo.meseInizioIdx]} ${obiettivoCumulativo.annoInizio}–${MESI[obiettivoCumulativo.meseTargetIdx]} ${obiettivoCumulativo.annoTarget}`;
-      notaQuota = ` <small class="muted">(fuori intervallo ${range})</small>`;
+  // --- Spese Premium
+  const quotaRip  = quotaSpeseRipartitePerMese(m, a);
+  const quotaMens = speseMensiliPerMese(m, a);
+
+  // --- Calcoli principali
+  const mensileDisponibile = totEntrate - (totSpese + quotaRip + quotaMens);
+  const mensileContabile   = mensileDisponibile - (obMensile + quotaCum);
+
+  // --- Saldo totale disponibile (somma cumulata fino al mese corrente)
+  let saldoTotale = 0;
+  for (const k in datiPerPeriodo) {
+    const [mName, aStr] = k.split("-");
+    const aNum = Number(aStr);
+    const idx = idxMeseFromName(mName);
+    if (aNum < a || (aNum === a && idx <= mIdx)) {
+      const dK = getPeriodoData(mName, aNum);
+      const eK = dK.entrate.reduce((s, e) => s + Number(e.importo), 0);
+      const uK = dK.spese.reduce((s, e) => s + Number(e.importo), 0);
+      const qRip = quotaSpeseRipartitePerMese(mName, aNum);
+      const qMens = speseMensiliPerMese(mName, aNum);
+      saldoTotale += (eK - (uK + qRip + qMens));
     }
   }
 
+  // --- Mostra i risultati nel box saldo
+  const saldoBox = document.getElementById("saldo");
+  if (!saldoBox) return;
+
+  saldoBox.innerHTML = `
+    <div class="rowline"><span>💶 Disponibile Mensile</span><span>${fmt(mensileDisponibile)}</span></div>
+    <div class="rowline sub"><span>– Obiettivo mensile</span><span>${fmt(obMensile)}</span></div>
+    <div class="rowline sub"><span>– Quota cumulativo</span><span>${fmt(quotaCum)}</span></div>
+    <div class="rowline sub"><span>– Spese ripartizione</span><span>${fmt(quotaRip)}</span></div>
+    <div class="rowline sub"><span>– Spese mensili</span><span>${fmt(quotaMens)}</span></div>
+    <div class="rowline focus"><span>📘 Contabile Mensile</span><span>${fmt(mensileContabile)}</span></div>
+    <div class="rowline"><span>💰 Saldo Totale</span><span>${fmt(saldoTotale)}</span></div>
+  `;
+}
   // Quote Premium (spese ricorrenti)
   const quotaRip  = quotaSpeseRipartitePerMese(m,a);
   const quotaMens = speseMensiliPerMese(m,a);
