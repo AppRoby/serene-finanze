@@ -1,519 +1,210 @@
 /* Base */
-corpo {
+body {
   font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
-  sfondo: #f4f8fc;
-  colore: #333;
-  margine: 0;
-  imbottitura: 0;
+  background: #f4f8fc; /* Sfondo chiara */
+  color: #1e293b; /* Testo scuro */
+  margin: 0;
+  padding: 0;
 }
 
-/* Avviso / Barra superiore */
-.avviso {
-  sfondo: #0ea5e9;
-  colore: #fff;
-  imbottitura: .75rem 1rem;
-  display: flessibile;
-  giustifica-contenuto: spazio-tra;
-  align-items: centro;
-  spazio: .5rem;
+/* Palette Colori - Definizione */
+:root {
+    --primary-blue: #003366; 
+    --success-green: #00CC66; 
+    --danger-red: #CC3333; 
+    --action-orange: #FFA500;
 }
+
+/* Notice / Topbar */
+.notice {
+  background: var(--primary-blue); /* Blu scuro professionale */
+  color: #fff;
+  padding: .75rem 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: .5rem;
+}
+.app-title { font-weight: 800; font-size: 1.25rem; }
 .notice .actions { display: flex; gap: .5rem; align-items:center; }
-.notice .buy { background:#22c55e; border:none; color:#fff; padding:.5rem .75rem; border-radius:6px; cursor:pointer; }
-.notice .pro { background:#a855f7; bordo:nessuno; colore:#fff; padding:.5rem .75rem; raggio del bordo:6px; cursore:puntatore; }
-.avviso .info-prova { font-weight:600; }
+/* Stile per i pulsanti di azione (Attiva Premium) */
+.notice .pro { 
+    background: #6366f1; /* Viola/Indaco per Premium */
+    border: none; 
+    color: #fff; 
+    padding:.5rem .75rem; 
+    border-radius:6px; 
+    cursor:pointer; 
+    font-weight: 600;
+}
+.notice .info-prova { font-weight:600; font-size: 0.875rem; }
+/* Versione Attiva Status */
+#versioneAttiva {
+    background: var(--success-green);
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+}
 
-/* Scheda di layout */
-.contenitore {
-  larghezza massima: 980px;
-  margine: 1rem auto 2rem;
-  imbottitura: 2rem;
-  sfondo: bianco;
-  raggio del bordo: 12px;
+
+/* Layout card */
+.container {
+  max-width: 980px;
+  margin: 1rem auto 2rem;
+  padding: 2rem;
+  background: white;
+  border-radius: 12px;
   box-shadow: 0 10px 30px rgba(0,0,0,0.08);
 }
-
-h1 { margine:0; }
-.app-title { font-weight:800; letter-spacing:.3px; }
-
-sezione {margine inferiore: 0.9rem; }
-
-input, seleziona, pulsante {
-  imbottitura: 0,6rem 0,7rem;
-  margine superiore: 0,5rem;
-  margine destro: 0,5rem;
-  larghezza: 100%;
-  larghezza massima: 100%;
-  box-sizing: border-box;
+.base-section {
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+}
+.base-section h2 { 
+    font-size: 1.5rem; 
+    font-weight: 700; 
+    color: var(--primary-blue);
+    margin-top: 0;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid #e2e8f0;
 }
 
-pulsante {
-  sfondo: #3498db;
-  colore: bianco;
-  bordo: nessuno;
-  cursore: puntatore;
-  raggio del bordo: 8px;
-  transizione: trasformazione .04s facilità, sfondo .2s facilità;
+/* Stile Saldo e Obiettivo */
+.saldo-box {
+    font-size: 2.5rem;
+    font-weight: 800;
+    margin-bottom: 1rem;
+    text-align: center;
+    padding: 1rem;
+    border-radius: 8px;
+    background: #f0fdf4; /* Sfondo leggero per il saldo */
 }
-pulsante:hover { sfondo: #2980b9; trasformazione: translateY(-1px); }
-pulsante:attivo { trasforma: traduciY(0); }
-pulsante.linklike {
-  sfondo: trasparente;
-  colore: #1d4ed8;
-  decorazione del testo: sottolineatura;
-  imbottitura: 0 .25rem;
-}
-
-/* Colonne */
-.colonne {
-  display: flessibile;
-  direzione di flessione: riga;
-  spazio: 2rem;
-  giustifica-contenuto: spazio-tra;
-}
-.colonne > div {
-  flessibilità: 1;
-  sfondo: #f0f4f8;
-  imbottitura: 1rem;
-  raggio del bordo: 10px;
-}
-ul { stile elenco: nessuno; imbottitura: 0; }
-ul li { margin-top: 0.5rem; display:flex; justify-content:space-between; align-items:center; gap:.5rem; }
-
-/* Stati / Messaggi */
-.rosso { colore di sfondo: #ffe6e6; colore: #c0392b; }
-.verde { colore di sfondo: #e0ffe0; colore: #27ae60; }
-.neutro { colore di sfondo: #fff3cd; colore: #8a6d3b; }
-.muted { colore: #666; peso del carattere: normale; }
-
-/* Suggerimento */
-.hint { colore: #6b7280; dimensione carattere: 0.9rem; }
-
-/* Righe e griglie */
-.row { display: flex; gap: 0.5rem; align-items: center; }
-.row select, .row input[type="number"] { width: auto; min-width: 140px; }
-
-.periodo {
-  visualizzazione: griglia;
-  colonne del modello di griglia: 160px 1fr 160px 1fr;
-  intervallo: 0,5rem 1rem;
-  align-items: centro;
-}
-
-/* Pericolo */
-.Pericolo {
-  colore di sfondo: cremisi;
-  colore: bianco;
-  larghezza: 100%;
-  imbottitura: 1rem;
-  font-weight: grassetto;
-  raggio del bordo: 8px;
-}
-.danger:hover { colore-sfondo: #b3122b; }
-
-/* Disabili */
-input[disabilitato] {
-  sfondo: #e9ecef;
-  colore: #495057;
-  cursore: non consentito;
-}
-
-/* Scatola Premium */
-.sezione premium {
-  bordo: 2px tratteggiato #a855f7;
-  imbottitura: 1rem;
-  raggio del bordo: 12px;
-  sfondo: #fff;
-}
-.premium-box h3 { margine: 0 0 8px 0; }
-.premium-box .premium-actions { display:flex; gap:8px; flex-wrap:wrap; }
-.pulsante premium-box { background:#2b9cff; }
-.pulsante premium-box:nth-child(2) { sfondo:#00b894; }
-
-/* Importi / Saldi */
-.importo-verde { color: #27ae60; font-weight: 700; }
-.importo-rosso { color: #c0392b; font-weight: 700; }
-.etichetta-saldo {
-  peso del carattere: 700;
-  display: flessibile;
-  align-items: centro;
-  spazio: 0,5 rem;
-}
-.saldo-box { background:#f8fafc; raggio del bordo:10px; imbottitura:10px 12px; }
-.saldo-box .rowline { display:flex; align-items:center; justify-content:space-between; gap:.75rem; padding:.25rem 0; }
-.saldo-box .rowline .title {
-  visualizzazione:flessibile;
-  allinea-elementi:centro;
-  spazio:.5rem;
-  peso del carattere:700;
-  dimensione carattere: 1.06rem; /* +grassetto +leggermente più grande */
-}
-
-.saldo-box .rowline > span:last-child {
-  peso del carattere:700;
-  dimensione carattere: 1.06rem; /* numeri leggermente più grandi */
-}
-
-/* Badge + microanimazioni */
-@keyframes pop {
-  0% { trasforma: scala(0,92); opacità: .6; }
-  70% { trasforma: scala(1.03); opacità: 1; }
-  100% { trasforma: scala(1); }
-}
-.distintivo {
-  margine superiore: 8px;
-  visualizzazione: blocco in linea;
-  imbottitura: 8px 12px;
-  raggio del bordo: 999px;
-  sfondo: #fef3c7;
-  colore: #92400e;
-  peso del carattere: 700;
-  animazione: pop .35s ease-out;
-}
-.nascosto { display: nessuno; }
-
-/* Barra di avanzamento */
-.progresso {
-  margine superiore: 10px;
-  sfondo: #e5e7eb;
-  raggio del bordo: 999px;
-  altezza: 14px;
-  larghezza: 100%;
-  overflow: nascosto;
-}
-.barra di avanzamento {
-  altezza: 100%;
-  larghezza: 0%;
-  sfondo: #27ae60;
-  transizione: larghezza .3s facilità;
-}
-
-/* Aforisma */
+.saldo-box .positivo { color: var(--success-green); }
+.saldo-box .negativo { color: var(--danger-red); }
 .aforisma {
-  margine superiore: 8px;
-  colore: #334155;
-  stile del carattere: corsivo;
- dimensione carattere: 1,06rem; /* appena più grande */
+    text-align: center;
+    font-style: italic;
+    color: #64748b;
+    margin-bottom: 1.5rem;
 }
 
-/* Reattivo */
-@media (larghezza massima: 768px) {
-  corpo { dimensione carattere: 16px; imbottitura: 10px; }
-  .row { direzione-flessione: colonna; spazio: 10px; elementi-allineamento: allungamento; }
-  .columns { direzione-flessione: colonna; spazio: 1rem; }
-  input[type="text"], input[type="number"], select { width: 100%; font-size: 16px; padding: 10px; }
-  pulsante { larghezza: 100%; dimensione carattere: 18px; spaziatura: 12px; }
-  .hint { dimensione carattere: 14px; }
+/* Stili Bottoni Generici */
+.actions { display: flex; gap: 0.75rem; flex-wrap: wrap; }
+button { 
+    padding: 0.6rem 1rem; 
+    border-radius: 6px; 
+    cursor: pointer; 
+    font-weight: 600;
+    transition: background-color 0.2s;
+}
+button.primary { background: var(--primary-blue); color: white; border: none; }
+button.secondary { background: #e2e8f0; color: #1e293b; border: none; }
+button.danger { background: var(--danger-red); color: white; border: none; margin-top: 2rem; }
+.transactions-actions button.buy { background: var(--success-green); }
+.transactions-actions button.pro { background: var(--danger-red); }
+
+/* Input e Form */
+input[type="text"], input[type="number"], select {
+    padding: 0.6rem;
+    border: 1px solid #cbd5e1;
+    border-radius: 4px;
+    flex-grow: 1;
+}
+.form-section {
+    margin-top: 1.5rem;
+    padding: 1rem;
+    border: 1px solid var(--primary-blue);
+    border-radius: 6px;
+    background: #f8fafc;
+}
+.form-section h3 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--primary-blue);
+    margin-top: 0;
+    margin-bottom: 1rem;
+}
+.form-section .actions {
+    margin-top: 1rem;
+    justify-content: flex-end;
 }
 
-/* Premium – blocchi */
-.premium-block {
-  sfondo:#f9fafb;
-  bordo:1px solido #e5e7eb;
-  raggio-del-bordo:10px;
-  imbottitura:1rem;
-  margine inferiore:1.5rem;
+/* Stile Obiettivo Mensile Manuale */
+.monthly-goal {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px dashed #cbd5e1;
 }
-.premium-block h3 {
-  margine superiore:0;
-  colore:#1d4ed8;
+.monthly-goal label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: var(--primary-blue);
 }
-.lista-premium {
-  stile elenco: nessuno;
-  margine-superiore:1rem;
-  padding-sinistra:0;
+.monthly-goal .actions {
+    display: flex;
+    gap: 0.5rem;
 }
-.lista-premium li {
-  sfondo:#fff;
-  bordo:1px solido #e5e7eb;
-  raggio-del-bordo:6px;
-  imbottitura:.5rem .75rem;
-  margine-superiore:.5rem;
-  visualizzazione:flessibile;
-  giustifica-contenuto:spazio-tra;
-  allinea-elementi:centro;
-}
-.lista-premium li span { font-weight:600; }
-.lista-premium button {
-  sfondo:#ef4444;
-  imbottitura:.3rem .6rem;
-  raggio-del-bordo:6px;
-  dimensione carattere:.9rem;
+.monthly-goal input {
+    flex-grow: 1;
 }
 
-/* Selettori */
-#labelPeriodo {
-  visualizzazione: blocco in linea;
-  margine inferiore: 10px;
-  dimensione carattere: 18px;
-  colore: #1d4ed8;
-  spaziatura tra le lettere: .5px;
+/* Stato Obiettivo (Progress Bar) */
+.goal-status {
+    text-align: left;
+    margin-top: 1rem;
+}
+.goal-bar-container {
+    width: 100%;
+    height: 10px;
+    background: #e2e8f0;
+    border-radius: 5px;
+    margin: 8px 0;
+}
+.goal-bar {
+    height: 100%;
+    background: var(--success-green);
+    border-radius: 5px;
+    transition: width 0.5s ease-in-out;
+}
+.goal-info {
+    font-size: 0.875rem;
+    color: #64748b;
+    display: flex;
+    justify-content: space-between;
+}
+.goal-months {
+    font-weight: 700;
+    color: var(--action-orange);
 }
 
-seleziona { larghezza minima: 110px; }
-
-/* Messaggi cumulativi */
-#messaggioCumulativo, #dettaglioCumulativo {
-  spazio bianco: normale;
-  altezza della riga: 1,4em;
-  margine: 4px 0;
+/* ===== Modal \"Vedi Movimenti\" (Modifiche minime per coerenza) ===== */
+.vm-modal { position:fixed; inset:0; display:none; z-index:9999; }
+.vm-modal.is-open { display:block; }
+.vm-modal__overlay {
+  position:absolute; inset:0;
+  background:rgba(0,51,102,.65); /* Scuro in linea con primary-blue */
+  backdrop-filter: blur(3px);
 }
-
-/* =========================
-   MOBILE: reattivo e compatto
-   ========================== */
-
-/* Tablet piccolo */
-@media (larghezza massima: 768px) {
-  .columns { display: griglia; colonne-modello-griglia: 1fr; spazio: 14px; }
-  .container { imbottitura: 14px; }
-  sezione { imbottitura: 14px; raggio del bordo: 14px; }
-  h2 { dimensione carattere: 1.15rem; }
-  .saldo-box p { margine: 6px 0; }
-}
-
-/* Smartphone */
-@media (larghezza massima: 480px) {
-  corpo { dimensione carattere: 14px; altezza riga: 1,35; }
-  .container { imbottitura: 12px; }
-  sezione { imbottitura: 12px; raggio del bordo: 12px; }
-
-  .top-bar { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 8px; padding: 12px; }
-  .top-bar .app-title { dimensione carattere: 1.6rem; altezza riga: 1.1; margine: 0; }
-  .abbonamenti-box { display: flex; gap: 8px; width: 100%; flex-wrap: wrap; }
-  .abbonamenti-box .acquista,
-  .abbonamenti-box .pro { flex: 1 1 calc(50% - 4px); padding: 10px 12px; font-size: 14px; border-radius: 10px; }
-  .info-prova { dimensione carattere: 12px; altezza riga: 1.2; larghezza: 100%; ordine: 3; opacità: .9; }
-
-  .etichetta periodo { display:block; margine:.25rem 0 .15rem; }
-  .periodo select { width: 100%; margin-bottom: .5rem; }
-
-  input[tipo="testo"],
-  input[tipo="numero"],
-  seleziona { larghezza: 100%; imbottitura: 10px 12px; dimensione carattere: 16px; }
-  pulsante {larghezza:100%; imbottitura: 12px; dimensione carattere: 16px; raggio bordo: 10px; }
-
-  h1 { dimensione carattere: 1.8rem; }
-  h2 { dimensione carattere: 1.05rem; }
-  .suggerimento, .disattivato, .sottotesto, piccolo { dimensione carattere: 12px; }
-
-  ul#listaEntrate li,
-  ul#listaSpese li,
-  .lista-premium li { dimensione carattere: 14px; imbottitura: 8px 10px; }
-
-  .premium-block { imbottitura: 12px; margine inferiore: 12px; }
-  .premium-block h3 { dimensione carattere: 1rem; margine inferiore: .5rem; }
-
-  .saldo-box p { margine: 4px 0; }
-  .badge { dimensione carattere: 12px; spaziatura: 3px 8px; raggio bordo: 9999px; }
-  .aforisma { dimensione carattere: 12px; margine superiore: 6px; }
-}
-
-/* ==== FIX MOBILE PERIODO (mese/anno) ==== */
-@media (larghezza massima: 600px) {
-  .periodo{
-    display: blocco !importante;
-  }
-  .etichetta periodo{
-    visualizzazione: blocco;
-    margine: 8px 0 4px;
-    altezza della riga: 1,2;
-  }
-  .periodo select{
-    visualizzazione: blocco;
-    larghezza: 100% !importante;
-    larghezza massima: 100% !importante;
-    margine: 0 0 10px 0;
-    dimensione carattere: 16px;
-  }
-}
-
-/* ===== MOBILE COMPACT & MONTH PICKER (4x3) ===== */
-@media (larghezza massima: 600px) {
-  .mp { margine: 0 0 10px 0; }
-  .mp-btn { larghezza:100%; imbottitura:10px 12px; dimensione carattere:16px; raggio bordo:10px; sfondo:#2b6cb0; colore:#fff; bordo:nessuno; }
-  .mp-grid {
-    display:grid; grid-template-columns: repeat(4, 1fr); gap:6px;
-    padding:8px; margin-top:8px; background:#0f172a; border:1px solid #1e293b; border-radius:12px;
-  }
-  .mp-grid[nascosto] { display:none; }
-  .mp-grid button { padding:8px 0; font-size:13px; border-radius:10px; border:1px solid #334155; background:#111827; color:#e5e7eb; }
-  .mp-grid button:active { transform:scale(0.98); }
-}
-
-/* ==== DROPDOWN Mese/Anno (affiancati) – CASSAFORTE MOBILE ==== */
-@media (larghezza massima: 600px) {
-  .picker-row { display: none; }
-  .js-dd-ready .picker-row {
-    visualizzazione: griglia;
-    colonne-modello-griglia: 1fr 1fr;
-    spazio: 10px;
-    margine superiore: 6px;
-  }
-  .js-dd-ready .periodo label[for="mese"],
-  .js-dd-ready .periodo label[for="anno"] { display: none !important; }
-  .js-dd-ready #mese,
-  .js-dd-ready #anno { display: none !important; }
-  .js-dd-ready .mp { display: none !important; }
-
-  .dd { posizione: relativa; }
-  .dd-btn {
-    larghezza: 100%;
-    imbottitura: 12px 14px;
-    dimensione carattere: 16px;
-    raggio del bordo: 14px;
-    bordo: nessuno;
-    sfondo: #0b4ea3;
-    colore: #fff;
-  }
-  .dd-menu {
-    posizione: assoluta;
-    in alto: calc(100% + 6px);
-    sinistra: 0; destra: 0;
-    sfondo: #0f172a;
-    bordo: 1px solido #1e293b;
-    raggio del bordo: 12px;
-    imbottitura: 6px;
-    indice z: 50;
-    altezza massima: 60vh;
-    trabocco: automatico;
-  }
-  .dd-menu[nascosto] { display: nessuno; }
-  .dd-pulsante menu {
-    larghezza: 100%;
-    imbottitura: 12px;
-    margine: 6px 0;
-    raggio del bordo: 12px;
-    bordo: nessuno;
-    sfondo: #0b4ea3;
-    colore: #fff;
-    dimensione carattere: 16px;
-  }
-}
-@media (larghezza massima: 600px){ .hidden-dd{ display:none !important; } }
-
-/* === Menu a discesa personalizzati (tocco singolo) === */
-.dd { posizione: relativa; visualizzazione: blocco in linea; larghezza: 100%; }
-.dd-btn { larghezza:100%; imbottitura:12px 14px; dimensione carattere:16px; raggio bordo:14px; bordo:nessuno; sfondo:#0b4ea3; colore:#fff; visualizzazione:flex; allineamento elementi:centro; giustificazione contenuto:spazio tra; }
-.dd-btn:after { contenuto:"â–¾"; opacità:.9; }
-.dd-menu { posizione:assoluta; in alto:calc(100% + 6px); sinistra:0; destra:0; sfondo:#0f172a; bordo:1px solido #1e293b; raggio bordo:12px; imbottitura:8px; indice z:100; altezza massima:60vh; overflow:auto; ombra riquadro:0 10px 24px rgba(0,0,0,.25); }
-.dd-menu[nascosto]{ display:none; }
-.dd-item { larghezza:100%; imbottitura:12px; margine:6px 0; raggio bordo:12px; bordo:nessuno; sfondo:#0b4ea3; colore:#fff; dimensione carattere:16px; allineamento testo:sinistra; }
-.dd-row { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:6px; }
-
-/* === Guasto === */
-.saldo-breakdown .rowline { display:flex; justify-content:space-between; align-items:center; padding:2px 0; }
-.saldo-breakdown .rowline.sub { opacità:.85; dimensione carattere:.95rem; }
-.saldo-breakdown .rowline.total { border-top:1px tratteggiato #cbd5e1; margin-top:6px; padding-top:6px; font-weight:700; }
-/* Etichette più evidenti SOLO per: Disponibile mensile, Contabile mensile, Saldo totale */
-.saldo-breakdown .rowline:first-child span:first-child,
-.saldo-breakdown .rowline.total span:first-child,
-.saldo-breakdown .rowline:last-child span:first-child {
-  peso del carattere:700;
-  dimensione carattere: 1.06rem; /* leggermente più grande */
-}
-
-/* Numeri più grandi nelle stesse 3 righe */
-.saldo-breakdown .rowline:first-child strong,
-.saldo-breakdown .rowline.total strong,
-.saldo-breakdown .rowline:last-child strong {
-  dimensione carattere: 1.06rem; /* leggermente più grande */
-}
-
-.importo-verde{ color:#22c55e; font-weight:700; }
-.importo-rosso{ color:#dc2626; font-weight:700; }
-}
-/* === Mese/Anno - due pulsanti identici per larghezza === */
-.mese-anno-container {
-  display: flessibile;
-  spazio: 12px;
-  margine superiore: 5px;
-}
-
-/* i due dropdown costruiti via JS (.dd) si comportano come colonne 50/50 */
-.mese-anno-container .dd {
-  flessibile: 1 1 0; /* stessa larghezza */
-  larghezza minima: 120px; /* evita i pulsanti troppo stretti */
-}
-
-/* il pulsante del dropdown riempie tutta la colonna */
-.mese-anno-contenitore .dd-btn {
-  larghezza: 100%;
-  allineamento del testo: centro;
-  box-sizing: border-box;
-}
-/* === Fissa larghezza box Entrate/Spese e impedisci allargamenti === */
-.entrate-box, .spese-box {
-  larghezza: 100%; /* prende tutta la larghezza della colonna */
-  larghezza massima: 100%; /* più larga del contenitore */
-  box-sizing: border-box; /* padding incluso nel calcolo */
-  a capo automatico: spezza parola; /* va a capo se il testo è troppo lungo */
-  overflow-wrap: break-word; /* compatibilità */
-}
-
-.entrate-box .movimento,
-.spese-box .movimento {
-  display: flessibile; /*allineamento ordinato */
-  giustifica-contenuto: spazio-tra; /* descrizione a sinistra, importo a destra */
-  align-items: centro;
-  spazio: 6px;
-  flex-wrap: avvolgere; /* se lo spazio non basta, va a capo */
-  dimensione carattere: 0.95rem;
-}
-/* === Uniforma spaziatura tra i blocchi principali === */
-.saldo-box,
-.entrate-box,
-.spese-box,
-.obiettivo-mensile-box,
-.verifica-mensile-box,
-.obiettivo-cumulativo-box {
-  margine inferiore: 15px; /* spazio costante sotto ogni blocco */
-}
-
-/* elimina gli spazi eccessivi interni */
-.saldo-box:last-child,
-.entrate-box:last-child,
-.spese-box:last-child,
-.obiettivo-mensile-box:last-child,
-.verifica-mensile-box:last-child,
-.obiettivo-cumulativo-box:last-child {
-  margine inferiore: 15px; /* uguale agli altri, non più */
-}
-/* ===== Modale "Vedi Movimenti" ===== */
-.vm-modal{ posizione:fissa; inserto:0; visualizzazione:nessuno; indice z:9999; }
-.vm-modal.is-open{ display:block; }
-
-.vm-modal__overlay{
-  posizione:assoluta; inserto:0;
-  sfondo:rgba(15,23,42,.55);
-  filtro sfondo: sfocatura(2px);
-}
-
-.vm-modal__dialog{
-  posizione:relativa;
-  margine:6vh auto;
-  larghezza:min(940px,92vw);
-  altezza massima:88vh; overflow:nascosto;
-  sfondo:#fff; raggio del bordo:16px;
+.vm-modal__dialog {
+  position:relative;
+  margin:6vh auto;
+  width:min(940px,92vw);
+  max-height:88vh; overflow:hidden;
+  background:#fff; border-radius:12px;
   box-shadow:0 20px 60px rgba(0,0,0,.25);
-  display:flex; direzione-flex:colonna;
+  display:flex; flex-direction:column;
 }
-
-.vm-modal__header{ display:flex; align-items:center; justify-content:space-between; padding:14px 18px; border-bottom:1px solid #e5e7eb; }
-.vm-modal__body{ display:grid; grid-template-columns:1fr 1fr; gap:16px; padding:14px 18px; overflow:auto; }
-.vm-modal__footer{ display:flex; align-items:center; justify-content:space-between; gap:12px; padding:12px 18px; background:#f1f5f9; border-top:1px solid #e5e7eb; }
-
-.vm-list{ stile-elenco: nessuno; margine: 0; imbottitura: 0; visualizzazione: griglia; spazio: 8px; }
-.vm-list li{ display:flex; align-items:center; justify-content:space-between; background:#f8fafc; padding:10px 12px; border-radius:10px; }
-
-.vm-close, .vm-ok{ bordo:none; raggio bordo:10px; padding:10px 14px; peso carattere:700; cursore:puntatore; }
-.vm-close{ sfondo:#e2e8f0; }
-.vm-ok{ sfondo:#0ea5e9; colore:#fff; }
-
-@media (larghezza massima: 640px){
-  .vm-modal__body{ colonne-modello-griglia:1fr; }
-}
-.vm-quando {
-  margine sinistro: 6px;
-  dimensione carattere: 0.8em;
-  colore: #64748b; /* grigio elegante */
-}
+.vm-modal__header { display:flex; align-items:center; justify-content:space-between; padding:14px 18px; border-bottom:1px solid #e5e7eb; }
+.vm-modal__body { display:grid; grid-template-columns:1fr 1fr; gap:16px; padding:14px 18px; overflow:auto; }
+.vm-modal__footer { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:12px 18px; background:#f1f5f9; border-top:1px solid #e5e7eb; }
+.vm-modal__footer h4, .vm-col h4 { color: var(--primary-blue); margin-top:0; border-bottom: 1px solid #e5e7eb; padding-bottom: 5px; }
+.vm-list { list-style: none; padding: 0; margin: 0; }
+.vm-list li { padding: 8px 0; border-bottom: 1px dotted #e5e7eb; font-size: 0.95rem; }
+.vm-list li strong { display: block; }
+.vm-totals strong#vm-tot-entrate { color: var(--success-green); }
+.vm-totals strong#vm-tot-spese { color: var(--danger-red); }
+.vm-totals strong#vm-saldo { font-size: 1.1rem; }
