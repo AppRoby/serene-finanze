@@ -1,23 +1,15 @@
 /* Base */
 body {
   font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
-  background: #f4f8fc; /* Sfondo chiara */
-  color: #1e293b; /* Testo scuro */
+  background: #f4f8fc;
+  color: #333;
   margin: 0;
   padding: 0;
 }
 
-/* Palette Colori - Definizione */
-:root {
-    --primary-blue: #003366; 
-    --success-green: #00CC66; 
-    --danger-red: #CC3333; 
-    --action-orange: #FFA500;
-}
-
 /* Notice / Topbar */
 .notice {
-  background: var(--primary-blue); /* Blu scuro professionale */
+  background: #0ea5e9;
   color: #fff;
   padding: .75rem 1rem;
   display: flex;
@@ -25,27 +17,10 @@ body {
   align-items: center;
   gap: .5rem;
 }
-.app-title { font-weight: 800; font-size: 1.25rem; }
 .notice .actions { display: flex; gap: .5rem; align-items:center; }
-/* Stile per i pulsanti di azione (Nuova Entrata/Spesa) */
-.notice .buy, .notice .pro { 
-    border: none; 
-    color: #fff; 
-    padding:.5rem .75rem; 
-    border-radius:6px; 
-    cursor:pointer; 
-    font-weight: 600;
-}
-.notice .pro { background: #6366f1; /* Viola/Indaco per Premium */ }
-.notice .info-prova { font-weight:600; font-size: 0.875rem; }
-/* Versione Attiva Status */
-#versioneAttiva {
-    background: var(--success-green);
-    padding: 0.25rem 0.5rem;
-    border-radius: 4px;
-    font-size: 0.75rem;
-}
-
+.notice .buy { background:#22c55e; border:none; color:#fff; padding:.5rem .75rem; border-radius:6px; cursor:pointer; }
+.notice .pro { background:#a855f7; border:none; color:#fff; padding:.5rem .75rem; border-radius:6px; cursor:pointer; }
+.notice .info-prova { font-weight:600; }
 
 /* Layout card */
 .container {
@@ -56,155 +31,489 @@ body {
   border-radius: 12px;
   box-shadow: 0 10px 30px rgba(0,0,0,0.08);
 }
-.base-section {
-    padding: 1.5rem;
-    margin-bottom: 1.5rem;
-    border: 1px solid #e2e8f0;
-    border-radius: 8px;
-}
-.base-section h2 { 
-    font-size: 1.5rem; 
-    font-weight: 700; 
-    color: var(--primary-blue);
-    margin-top: 0;
-    margin-bottom: 1rem;
-    padding-bottom: 0.5rem;
-    border-bottom: 2px solid #e2e8f0;
+
+h1 { margin:0; }
+.app-title { font-weight:800; letter-spacing:.3px; }
+
+section { margin-bottom: 0.9rem; }
+
+input, select, button {
+  padding: 0.6rem 0.7rem;
+  margin-top: 0.5rem;
+  margin-right: 0.5rem;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
-/* Stile Saldo e Obiettivo */
-.saldo-box {
-    font-size: 2.5rem;
-    font-weight: 800;
-    margin-bottom: 1rem;
-    text-align: center;
-    padding: 1rem;
-    border-radius: 8px;
-    background: #f0fdf4; /* Sfondo leggero per il saldo */
+button {
+  background: #3498db;
+  color: white;
+  border: none;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: transform .04s ease, background .2s ease;
 }
-.saldo-box .positivo { color: var(--success-green); }
-.saldo-box .negativo { color: var(--danger-red); }
+button:hover { background: #2980b9; transform: translateY(-1px); }
+button:active { transform: translateY(0); }
+button.linklike {
+  background: transparent;
+  color: #1d4ed8;
+  text-decoration: underline;
+  padding: 0 .25rem;
+}
+
+/* Columns */
+.columns {
+  display: flex;
+  flex-direction: row;
+  gap: 2rem;
+  justify-content: space-between;
+}
+.columns > div {
+  flex: 1;
+  background: #f0f4f8;
+  padding: 1rem;
+  border-radius: 10px;
+}
+ul { list-style: none; padding: 0; }
+ul li { margin-top: 0.5rem; display:flex; justify-content:space-between; align-items:center; gap:.5rem; }
+
+/* Stati / Messaggi */
+.rosso { background-color: #ffe6e6; color: #c0392b; }
+.verde { background-color: #e0ffe0; color: #27ae60; }
+.neutro { background-color: #fff3cd; color: #8a6d3b; }
+.muted { color: #666; font-weight: normal; }
+
+/* Hint */
+.hint { color: #6b7280; font-size: 0.9rem; }
+
+/* Righe e griglie */
+.row { display: flex; gap: 0.5rem; align-items: center; }
+.row select, .row input[type="number"] { width: auto; min-width: 140px; }
+
+.periodo {
+  display: grid;
+  grid-template-columns: 160px 1fr 160px 1fr;
+  gap: 0.5rem 1rem;
+  align-items: center;
+}
+
+/* Danger */
+.danger {
+  background-color: crimson;
+  color: white;
+  width: 100%;
+  padding: 1rem;
+  font-weight: bold;
+  border-radius: 8px;
+}
+.danger:hover { background-color: #b3122b; }
+
+/* Disabilitati */
+input[disabled] {
+  background: #e9ecef;
+  color: #495057;
+  cursor: not-allowed;
+}
+
+/* Premium box */
+.premium-section {
+  border: 2px dashed #a855f7;
+  padding: 1rem;
+  border-radius: 12px;
+  background: #fff;
+}
+.premium-box h3 { margin: 0 0 8px 0; }
+.premium-box .premium-actions { display:flex; gap:8px; flex-wrap:wrap; }
+.premium-box button { background:#2b9cff; }
+.premium-box button:nth-child(2) { background:#00b894; }
+
+/* Importi / Saldi */
+.importo-verde { color: #27ae60; font-weight: 700; }
+.importo-rosso { color: #c0392b; font-weight: 700; }
+.saldo-label {
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.saldo-box { background:#f8fafc; border-radius:10px; padding:10px 12px; }
+.saldo-box .rowline { display:flex; align-items:center; justify-content:space-between; gap:.75rem; padding:.25rem 0; }
+.saldo-box .rowline .title { 
+  display:flex; 
+  align-items:center; 
+  gap:.5rem; 
+  font-weight:700; 
+  font-size:1.06rem;    /* +grassetto +leggermente più grande */
+}
+
+.saldo-box .rowline > span:last-child {
+  font-weight:700;
+  font-size:1.06rem;                      /* numeri leggermente più grandi */
+}
+
+/* Badge + micro-animazioni */
+@keyframes pop {
+  0% { transform: scale(0.92); opacity: .6; }
+  70% { transform: scale(1.03); opacity: 1; }
+  100% { transform: scale(1); }
+}
+.badge {
+  margin-top: 8px;
+  display: inline-block;
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: #fef3c7;
+  color: #92400e;
+  font-weight: 700;
+  animation: pop .35s ease-out;
+}
+.hidden { display: none; }
+
+/* Progress bar */
+.progress {
+  margin-top: 10px;
+  background: #e5e7eb;
+  border-radius: 999px;
+  height: 14px;
+  width: 100%;
+  overflow: hidden;
+}
+.progress-bar {
+  height: 100%;
+  width: 0%;
+  background: #27ae60;
+  transition: width .3s ease;
+}
+
+/* Aforisma */
 .aforisma {
-    text-align: center;
-    font-style: italic;
-    color: #64748b;
-    margin-bottom: 1.5rem;
+  margin-top: 8px;
+  color: #334155;
+  font-style: italic;
+ font-size: 1.06rem;   /* appena più grande */
 }
 
-/* Stili Bottoni Generici */
-.actions { display: flex; gap: 0.75rem; flex-wrap: wrap; }
-button { 
-    padding: 0.6rem 1rem; 
-    border-radius: 6px; 
-    cursor: pointer; 
-    font-weight: 600;
-    transition: background-color 0.2s;
-}
-button.primary { background: var(--primary-blue); color: white; border: none; }
-button.secondary { background: #e2e8f0; color: #1e293b; border: none; }
-button.danger { background: var(--danger-red); color: white; border: none; margin-top: 2rem; }
-.transactions-actions button.buy { background: var(--success-green); }
-.transactions-actions button.pro { background: var(--danger-red); }
-
-/* Input e Form */
-input[type="text"], input[type="number"], select {
-    padding: 0.6rem;
-    border: 1px solid #cbd5e1;
-    border-radius: 4px;
-    flex-grow: 1;
-}
-.form-section {
-    margin-top: 1.5rem;
-    padding: 1rem;
-    border: 1px solid var(--primary-blue);
-    border-radius: 6px;
-    background: #f8fafc;
-}
-.form-section h3 {
-    font-size: 1.25rem;
-    font-weight: 600;
-    color: var(--primary-blue);
-    margin-top: 0;
-    margin-bottom: 1rem;
-}
-.form-section .actions {
-    margin-top: 1rem;
-    justify-content: flex-end;
+/* Responsive */
+@media (max-width: 768px) {
+  body { font-size: 16px; padding: 10px; }
+  .row { flex-direction: column; gap: 10px; align-items: stretch; }
+  .columns { flex-direction: column; gap: 1rem; }
+  input[type="text"], input[type="number"], select { width: 100%; font-size: 16px; padding: 10px; }
+  button { width: 100%; font-size: 18px; padding: 12px; }
+  .hint { font-size: 14px; }
 }
 
-/* Stile Obiettivo Mensile Manuale */
-.monthly-goal {
-    margin-top: 1rem;
-    padding-top: 1rem;
-    border-top: 1px dashed #cbd5e1;
+/* Premium – blocchi */
+.premium-block {
+  background:#f9fafb;
+  border:1px solid #e5e7eb;
+  border-radius:10px;
+  padding:1rem;
+  margin-bottom:1.5rem;
 }
-.monthly-goal label {
+.premium-block h3 {
+  margin-top:0;
+  color:#1d4ed8;
+}
+.lista-premium {
+  list-style:none;
+  margin-top:1rem;
+  padding-left:0;
+}
+.lista-premium li {
+  background:#fff;
+  border:1px solid #e5e7eb;
+  border-radius:6px;
+  padding:.5rem .75rem;
+  margin-top:.5rem;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+.lista-premium li span { font-weight:600; }
+.lista-premium button {
+  background:#ef4444;
+  padding:.3rem .6rem;
+  border-radius:6px;
+  font-size:.9rem;
+}
+
+/* Selettori */
+#labelPeriodo {
+  display: inline-block;
+  margin-bottom: 10px;
+  font-size: 18px;
+  color: #1d4ed8;
+  letter-spacing: .5px;
+}
+
+select { min-width: 110px; }
+
+/* Messaggi cumulativo */
+#messaggioCumulativo, #dettaglioCumulativo {
+  white-space: normal;
+  line-height: 1.4em;
+  margin: 4px 0;
+}
+
+/* =========================
+   MOBILE – responsive & compact
+   ========================= */
+
+/* Tablet piccolo */
+@media (max-width: 768px) {
+  .columns { display: grid; grid-template-columns: 1fr; gap: 14px; }
+  .container { padding: 14px; }
+  section { padding: 14px; border-radius: 14px; }
+  h2 { font-size: 1.15rem; }
+  .saldo-box p { margin: 6px 0; }
+}
+
+/* Smartphone */
+@media (max-width: 480px) {
+  body { font-size: 14px; line-height: 1.35; }
+  .container { padding: 12px; }
+  section { padding: 12px; border-radius: 12px; }
+
+  .top-bar { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 8px; padding: 12px; }
+  .top-bar .app-title { font-size: 1.6rem; line-height: 1.1; margin: 0; }
+  .abbonamenti-box { display: flex; gap: 8px; width: 100%; flex-wrap: wrap; }
+  .abbonamenti-box .buy,
+  .abbonamenti-box .pro { flex: 1 1 calc(50% - 4px); padding: 10px 12px; font-size: 14px; border-radius: 10px; }
+  .info-prova { font-size: 12px; line-height: 1.2; width: 100%; order: 3; opacity: .9; }
+
+  .periodo label { display:block; margin:.25rem 0 .15rem; }
+  .periodo select { width: 100%; margin-bottom: .5rem; }
+
+  input[type="text"],
+  input[type="number"],
+  select { width:100%; padding: 10px 12px; font-size: 16px; }
+  button { width:100%; padding: 12px; font-size: 16px; border-radius: 10px; }
+
+  h1 { font-size: 1.8rem; }
+  h2 { font-size: 1.05rem; }
+  .hint, .muted, .subtext, small { font-size: 12px; }
+
+  ul#listaEntrate li,
+  ul#listaSpese li,
+  .lista-premium li { font-size: 14px; padding: 8px 10px; }
+
+  .premium-block { padding: 12px; margin-bottom: 12px; }
+  .premium-block h3 { font-size: 1rem; margin-bottom: .5rem; }
+
+  .saldo-box p { margin: 4px 0; }
+  .badge { font-size: 12px; padding: 3px 8px; border-radius: 9999px; }
+  .aforisma { font-size: 12px; margin-top: 6px; }
+}
+
+/* ==== FIX MOBILE PERIODO (mese/anno) ==== */
+@media (max-width: 600px) {
+  .periodo{
+    display: block !important;
+  }
+  .periodo label{
     display: block;
-    font-weight: 600;
-    margin-bottom: 0.5rem;
-    color: var(--primary-blue);
-}
-.monthly-goal .actions {
-    display: flex;
-    gap: 0.5rem;
-}
-.monthly-goal input {
-    flex-grow: 1;
+    margin: 8px 0 4px;
+    line-height: 1.2;
+  }
+  .periodo select{
+    display: block;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 0 10px 0;
+    font-size: 16px;
+  }
 }
 
-/* Stato Obiettivo (Progress Bar) */
-.goal-status {
-    text-align: left;
-    margin-top: 1rem;
+/* ===== MOBILE COMPACT & MONTH PICKER (4x3) ===== */
+@media (max-width: 600px) {
+  .mp { margin: 0 0 10px 0; }
+  .mp-btn { width:100%; padding:10px 12px; font-size:16px; border-radius:10px; background:#2b6cb0; color:#fff; border:none; }
+  .mp-grid {
+    display:grid; grid-template-columns: repeat(4, 1fr); gap:6px;
+    padding:8px; margin-top:8px; background:#0f172a; border:1px solid #1e293b; border-radius:12px;
+  }
+  .mp-grid[hidden] { display:none; }
+  .mp-grid button { padding:8px 0; font-size:13px; border-radius:10px; border:1px solid #334155; background:#111827; color:#e5e7eb; }
+  .mp-grid button:active { transform:scale(0.98); }
 }
-.goal-bar-container {
+
+/* ==== DROPDOWN Mese/Anno (affiancati) – MOBILE SAFE ==== */
+@media (max-width: 600px) {
+  .picker-row { display: none; }
+  .js-dd-ready .picker-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 6px;
+  }
+  .js-dd-ready .periodo label[for="mese"],
+  .js-dd-ready .periodo label[for="anno"] { display: none !important; }
+  .js-dd-ready #mese,
+  .js-dd-ready #anno { display: none !important; }
+  .js-dd-ready .mp { display: none !important; }
+
+  .dd { position: relative; }
+  .dd-btn {
     width: 100%;
-    height: 10px;
-    background: #e2e8f0;
-    border-radius: 5px;
-    margin: 8px 0;
+    padding: 12px 14px;
+    font-size: 16px;
+    border-radius: 14px;
+    border: none;
+    background: #0b4ea3;
+    color: #fff;
+  }
+  .dd-menu {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0; right: 0;
+    background: #0f172a;
+    border: 1px solid #1e293b;
+    border-radius: 12px;
+    padding: 6px;
+    z-index: 50;
+    max-height: 60vh;
+    overflow: auto;
+  }
+  .dd-menu[hidden] { display: none; }
+  .dd-menu button {
+    width: 100%;
+    padding: 12px;
+    margin: 6px 0;
+    border-radius: 12px;
+    border: none;
+    background: #0b4ea3;
+    color: #fff;
+    font-size: 16px;
+  }
 }
-.goal-bar {
-    height: 100%;
-    background: var(--success-green);
-    border-radius: 5px;
-    transition: width 0.5s ease-in-out;
-}
-.goal-info {
-    font-size: 0.875rem;
-    color: #64748b;
-    display: flex;
-    justify-content: space-between;
-}
-.goal-months {
-    font-weight: 700;
-    color: var(--action-orange);
+@media (max-width: 600px){ .hidden-dd{ display:none !important; } }
+
+/* === Custom dropdowns (single-tap) === */
+.dd { position: relative; display: inline-block; width: 100%; }
+.dd-btn { width:100%; padding:12px 14px; font-size:16px; border-radius:14px; border:none; background:#0b4ea3; color:#fff; display:flex; align-items:center; justify-content:space-between; }
+.dd-btn:after { content:"▾"; opacity:.9; }
+.dd-menu { position:absolute; top:calc(100% + 6px); left:0; right:0; background:#0f172a; border:1px solid #1e293b; border-radius:12px; padding:8px; z-index:100; max-height:60vh; overflow:auto; box-shadow:0 10px 24px rgba(0,0,0,.25); }
+.dd-menu[hidden]{ display:none; }
+.dd-item { width:100%; padding:12px; margin:6px 0; border-radius:12px; border:none; background:#0b4ea3; color:#fff; font-size:16px; text-align:left; }
+.dd-row { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:6px; }
+
+/* === Saldo breakdown === */
+.saldo-breakdown .rowline { display:flex; justify-content:space-between; align-items:center; padding:2px 0; }
+.saldo-breakdown .rowline.sub { opacity:.85; font-size:.95rem; }
+.saldo-breakdown .rowline.total { border-top:1px dashed #cbd5e1; margin-top:6px; padding-top:6px; font-weight:700; }
+/* Etichette più evidenti SOLO per: Disponibile mensile, Contabile mensile, Saldo totale */
+.saldo-breakdown .rowline:first-child span:first-child,
+.saldo-breakdown .rowline.total span:first-child,
+.saldo-breakdown .rowline:last-child span:first-child {
+  font-weight:700;
+  font-size:1.06rem;   /* leggermente più grande */
 }
 
-/* ===== Modal \"Vedi Movimenti\" (Modifiche minime per coerenza) ===== */
-.vm-modal { position:fixed; inset:0; display:none; z-index:9999; }
-.vm-modal.is-open { display:block; }
-.vm-modal__overlay {
-  position:absolute; inset:0;
-  background:rgba(0,51,102,.65); /* Scuro in linea con primary-blue */
-  backdrop-filter: blur(3px);
+/* Numeri più grandi nelle stesse 3 righe */
+.saldo-breakdown .rowline:first-child strong,
+.saldo-breakdown .rowline.total strong,
+.saldo-breakdown .rowline:last-child strong {
+  font-size:1.06rem;   /* leggermente più grande */
 }
-.vm-modal__dialog {
+
+.importo-verde{ color:#22c55e; font-weight:700; }
+.importo-rosso{ color:#dc2626; font-weight:700; }
+}
+/* === Mese/Anno - due pulsanti identici per larghezza === */
+.mese-anno-container {
+  display: flex;
+  gap: 12px;
+  margin-top: 5px;
+}
+
+/* i due dropdown costruiti via JS (.dd) si comportano come colonne 50/50 */
+.mese-anno-container .dd {
+  flex: 1 1 0;       /* stessa larghezza */
+  min-width: 120px;  /* evita pulsanti troppo stretti */
+}
+
+/* il pulsante del dropdown riempie tutta la colonna */
+.mese-anno-container .dd-btn {
+  width: 100%;
+  text-align: center;
+  box-sizing: border-box;
+}
+/* === Fissa larghezza box Entrate/Spese e impedisci allargamenti === */
+.entrate-box, .spese-box {
+  width: 100%;                /* prende tutta la larghezza della colonna */
+  max-width: 100%;            /* mai più larghe del contenitore */
+  box-sizing: border-box;     /* padding incluso nel calcolo */
+  word-wrap: break-word;      /* va a capo se il testo è troppo lungo */
+  overflow-wrap: break-word;  /* compatibilità */
+}
+
+.entrate-box .movimento, 
+.spese-box .movimento {
+  display: flex;              /* allineamento ordinato */
+  justify-content: space-between; /* descrizione a sinistra, importo a destra */
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;            /* se lo spazio non basta, va a capo */
+  font-size: 0.95rem;
+}
+/* === Uniforma spaziatura tra i blocchi principali === */
+.saldo-box,
+.entrate-box,
+.spese-box,
+.obiettivo-mensile-box,
+.verifica-mensile-box,
+.obiettivo-cumulativo-box {
+  margin-bottom: 15px;   /* spazio costante sotto ogni blocco */
+}
+
+/* elimina spazi eccessivi interni */
+.saldo-box:last-child,
+.entrate-box:last-child,
+.spese-box:last-child,
+.obiettivo-mensile-box:last-child,
+.verifica-mensile-box:last-child,
+.obiettivo-cumulativo-box:last-child {
+  margin-bottom: 15px;   /* uguale agli altri, non più */
+}
+/* ===== Modal "Vedi Movimenti" ===== */
+.vm-modal{ position:fixed; inset:0; display:none; z-index:9999; }
+.vm-modal.is-open{ display:block; }
+
+.vm-modal__overlay{
+  position:absolute; inset:0;
+  background:rgba(15,23,42,.55);
+  backdrop-filter: blur(2px);
+}
+
+.vm-modal__dialog{
   position:relative;
   margin:6vh auto;
   width:min(940px,92vw);
   max-height:88vh; overflow:hidden;
-  background:#fff; border-radius:12px;
+  background:#fff; border-radius:16px;
   box-shadow:0 20px 60px rgba(0,0,0,.25);
   display:flex; flex-direction:column;
 }
-.vm-modal__header { display:flex; align-items:center; justify-content:space-between; padding:14px 18px; border-bottom:1px solid #e5e7eb; }
-.vm-modal__body { display:grid; grid-template-columns:1fr 1fr; gap:16px; padding:14px 18px; overflow:auto; }
-.vm-modal__footer { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:12px 18px; background:#f1f5f9; border-top:1px solid #e5e7eb; }
-.vm-modal__footer h4, .vm-col h4 { color: var(--primary-blue); margin-top:0; border-bottom: 1px solid #e5e7eb; padding-bottom: 5px; }
-.vm-list { list-style: none; padding: 0; margin: 0; }
-.vm-list li { padding: 8px 0; border-bottom: 1px dotted #e5e7eb; font-size: 0.95rem; }
-.vm-list li strong { display: block; }
-.vm-totals strong#vm-tot-entrate { color: var(--success-green); }
-.vm-totals strong#vm-tot-spese { color: var(--danger-red); }
-.vm-totals strong#vm-saldo { font-size: 1.1rem; }
+
+.vm-modal__header{ display:flex; align-items:center; justify-content:space-between; padding:14px 18px; border-bottom:1px solid #e5e7eb; }
+.vm-modal__body{ display:grid; grid-template-columns:1fr 1fr; gap:16px; padding:14px 18px; overflow:auto; }
+.vm-modal__footer{ display:flex; align-items:center; justify-content:space-between; gap:12px; padding:12px 18px; background:#f1f5f9; border-top:1px solid #e5e7eb; }
+
+.vm-list{ list-style:none; margin:0; padding:0; display:grid; gap:8px; }
+.vm-list li{ display:flex; align-items:center; justify-content:space-between; background:#f8fafc; padding:10px 12px; border-radius:10px; }
+
+.vm-close, .vm-ok{ border:none; border-radius:10px; padding:10px 14px; font-weight:700; cursor:pointer; }
+.vm-close{ background:#e2e8f0; }
+.vm-ok{ background:#0ea5e9; color:#fff; }
+
+@media (max-width:640px){
+  .vm-modal__body{ grid-template-columns:1fr; }
+}
+.vm-when {
+  margin-left: 6px;
+  font-size: 0.8em;
+  color: #64748b; /* grigio elegante */
+}
