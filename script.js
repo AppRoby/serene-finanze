@@ -264,15 +264,19 @@ function renderPremium(){
    ========================= */
 function updateHeader(){
   const m = periodoCorrente.mese, a = periodoCorrente.anno;
+
   const labelPeriodo = document.getElementById("labelPeriodo");
   const labelMeseObj = document.getElementById("meseObiettivo");
   if (labelPeriodo) labelPeriodo.innerText = `${cap(m)} ${a}`;
   if (labelMeseObj) labelMeseObj.innerText = `${cap(m)} ${a}`;
+
+  // ✅ QUI le virgolette SONO OBBLIGATORIE
+  const verEl = document.getElementById("versioneAttiva");
+  if (verEl) verEl.innerText = "🌟 Versione Premium attiva";
+
+  // se esiste ancora l'elemento giorniProva, svuotalo (opzionale)
   const giorniProvaEl = document.getElementById("giorniProva");
-  if (giorniProvaEl) giorniProvaEl.innerText = String(statoAbbonamento.giorniProva);
- const verEl = document.getElementById("versioneAttiva");
-if (verEl) verEl.innerText = "🌟 Versione Premium attiva";
-Versione Premium attiva" : "âœ… Versione Base attiva");
+  if (giorniProvaEl) giorniProvaEl.innerText = "";
 }
 function updateLists(){
   const m = periodoCorrente.mese, a = periodoCorrente.anno;
@@ -597,7 +601,7 @@ if(ULspe) ULspe.innerHTML = d.spese.map(it =>
   // Totali e saldo netto
   const totEntr = d.entrate.reduce((s,e)=>s+Number(e.importo||0),0);
   const totSpe  = d.spese.reduce((s,e)=>s+Number(e.importo||0),0);
-  const saldo   = saldoDisponibileOfNome(m, a); // include eventuali spese Premium
+  const saldonetto   = saldoDisponibileOfNome(m, a); // include eventuali spese Premium
 
   const elME = modal.querySelector("#vm-meseanno");
   const elTE = modal.querySelector("#vm-tot-entrate");
@@ -607,7 +611,7 @@ if(ULspe) ULspe.innerHTML = d.spese.map(it =>
   if(elME) elME.textContent = cap(m) + " " + a;
   if(elTE) elTE.textContent = fmt(totEntr);
   if(elTS) elTS.textContent = fmt(totSpe);
-  if(elSN) elSN.textContent = (saldo>=0? fmt(saldo) : `-${fmt(Math.abs(saldo))}`);
+  if(elSN) elSN.textContent = (saldonetto>=0? fmt(saldonetto) : `-${fmt(Math.abs(saldonetto))}`);
 
   // Apri modal
   modal.classList.add("is-open");
