@@ -3,95 +3,171 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Coach Finanziario Premium</title>
-  <link rel="stylesheet" href="style.css?v=23"> </head>
+  <title>Sereni Finanze</title>
+  <!-- bump cache -->
+  <link rel="stylesheet" href="style.css?v=21">
+</head>
 <body>
-  <div class="top-bar notice" role="region" aria-label="Stato abbonamento">
-    <h1 class="app-title">💰 Coach Finanziario Premium</h1>
+  <!-- Top Bar -->
+  <div class="top-bar notice" role="region" aria-label="Barra superiore">
+    <h1 class="app-title">ðŸ“† Sereni Finanze</h1>
 
-    <div id="abbonamenti" class="abbonamenti-box actions" aria-label="Gestione abbonamento">
-      <button class="pro" onclick="attivaPremium()" aria-label="Attiva versione Premium">Attiva Premium</button>
-      <div id="provaInfo" class="info-prova">
-        <span id="versioneAttiva">⏳ Caricamento stato...</span>
-      </div>
+    <div id="abbonamenti" class="abbonamenti-box actions" aria-label="Gestione versioni">
+  <div class="info-prova">🌟 Versione Premium attiva</div>
+</div>
     </div>
   </div>
 
   <div class="container">
+<!-- Saldi -->
     <section class="base-section" aria-label="Riepilogo saldi">
       <h2>Saldo per <span id="labelPeriodo">GENNAIO 2025</span></h2>
       <div id="saldo" class="saldo-box"></div>
-      <p class="aforisma" id="aforisma">✨ Ogni euro risparmiato è un mattone per la tua libertà.</p>
-      
-      <div class="actions">
-        <button onclick="changePeriod(-1)" class="secondary">◀︎ Mese Precedente</button>
-        <button onclick="changePeriod(1)" class="secondary">Mese Successivo ▶︎</button>
+      <p class="aforisma" id="aforisma">âœ¨ Ogni euro risparmiato Ã¨ un mattone della tua libertÃ  finanziaria.</p>
+    </section>
+    <!-- Selettori periodo -->
+    <section class="periodo" id="periodo" aria-label="Selezione periodo">
+  <label for="mese">Scegli il mese e l'anno:</label>
+  <div class="mese-anno-container">
+    <select id="mese" onchange="cambiaPeriodo()" aria-label="Seleziona mese"></select>
+    <select id="anno" onchange="cambiaPeriodo()" aria-label="Seleziona anno"></select>
+  </div>
+</section>
+
+    <!-- Entrate / Spese -->
+    <section class="columns base-section" aria-label="Gestione entrate e spese">
+      <div>
+        <h2>Entrate</h2>
+        <input id="descrizioneEntrata" type="text" placeholder="Descrizione" aria-label="Descrizione entrata" />
+        <input id="importoEntrata" type="number" step="0.01" placeholder="Importo (â‚¬)" aria-label="Importo entrata in euro" />
+        <button onclick="aggiungiEntrata()" aria-label="Salva entrata">Salva Entrata</button>
+        <ul id="listaEntrate" aria-live="polite"></ul>
+      </div>
+
+      <div>
+        <h2>Spese</h2>
+        <input id="descrizioneSpesa" type="text" placeholder="Descrizione" aria-label="Descrizione spesa" />
+        <input id="importoSpesa" type="number" step="0.01" placeholder="Importo (â‚¬)" aria-label="Importo spesa in euro" />
+        <button onclick="aggiungiSpesa()" aria-label="Salva spesa">Salva Spesa</button>
+        <ul id="listaSpese" aria-live="polite"></ul>
+      </div>
+      <!-- VEDI MOVIMENTI: pulsante barra full-width -->
+      <div class="vm-fullrow">
+        <button id="btnVediMovimenti" class="vm-barbtn" type="button" aria-haspopup="dialog" aria-controls="modalMovimenti">
+          ðŸ‘ï¸ VEDI MOVIMENTI DEL MESE
+        </button>
+      </div>
+
+    </section>
+
+    <!-- Obiettivo Mensile -->
+    <section class="columns base-section" aria-label="Obiettivo mensile">
+      <div>
+        <h2>ðŸŽ¯ Obiettivo Risparmio (mensile) â€“ <span id="meseObiettivo">GENNAIO 2025</span></h2>
+        <input id="obiettivoMensile" type="number" step="0.01" placeholder="Es. 250 â‚¬" aria-label="Obiettivo mensile in euro" />
+        <button id="btnSalvaObiettivoMensile" onclick="salvaObiettivoMensile()" aria-label="Salva obiettivo mensile">
+          Salva Obiettivo Mensile
+        </button>
+        <small id="notaAuto" class="hint"></small>
+      </div>
+
+      <div>
+        <h2>ðŸ§ª Verifica Obiettivo (mensile)</h2>
+        <p id="messMens" class="muted" role="status" aria-live="polite">Nessun obiettivo impostato.</p>
+        <p id="diffMens"></p>
+        <div id="badgeMensile" class="badge hidden" aria-hidden="true">ðŸ† Badge Mensile: Obiettivo raggiunto!</div>
       </div>
     </section>
-    
-    <section class="base-section goal-section" aria-label="Obiettivo di risparmio">
-      <h2 id="goalTitle">💰 Obiettivo di Risparmio Cumulativo</h2>
-      <div id="obiettivo" class="saldo-box">
+
+    <!-- Obiettivo Cumulativo -->
+    <section class="columns base-section" aria-label="Obiettivo cumulativo">
+      <div>
+        <h2>ðŸ Obiettivo Cumulativo (entro data)</h2>
+        <input id="importoCumulativo" type="number" step="0.01" placeholder="Totale da risparmiare (es. 900 â‚¬)" />
+
+        <div class="row">
+          <label for="meseInizioTarget">Mese inizio:</label>
+          <select id="meseInizioTarget"></select>
+          <label for="annoInizioTarget">Anno:</label>
+          <select id="annoInizioTarget"></select>
         </div>
-      <div id="monthlyGoalInput" class="monthly-goal">
-        <label for="obiettivoMensileManuale">Quota Risparmio Mensile (per calcolare i mesi mancanti):</label>
-        <div class="actions">
-          <input type="number" id="obiettivoMensileManuale" placeholder="Es. 100" />
-          <button onclick="salvaObiettivoMensile()" class="primary">Aggiorna Quota</button>
+
+        <div class="row">
+          <label for="meseTarget">Mese fine:</label>
+          <select id="meseTarget"></select>
+          <label for="annoTarget">Anno:</label>
+          <select id="annoTarget"></select>
         </div>
+
+        <button onclick="salvaObiettivoCumulativo()">Salva Obiettivo Cumulativo</button>
+        <small class="hint">Se non imposti nulla: promemoria non invasivo.</small>
+      </div>
+
+      <div>
+        <h2>ðŸ“ˆ Verifica Cumulativa</h2>
+        <div id="messaggioCumulativo" class="muted" role="status" aria-live="polite">
+          ðŸ”” Hai un obiettivo cumulativo? Impostalo a sinistra.
+        </div>
+        <div id="dettaglioCumulativo" class="subtext"></div>
+        <div class="progress" aria-label="Avanzamento cumulativo" aria-valuemin="0" aria-valuemax="100">
+          <div id="progressBar" class="progress-bar" style="width:0%" aria-valuenow="0"></div>
+        </div>
+        <div id="badgeCumulativo" class="badge hidden" aria-hidden="true">ðŸ¥‡ Traguardo Cumulativo raggiunto!</div>
       </div>
     </section>
 
-    <section class="base-section transactions-section" aria-label="Gestione entrate e spese">
-      <div class="transactions-actions actions">
-        <button onclick="toggleForm('entrata')" class="buy">➕ Nuova Entrata</button>
-        <button onclick="toggleForm('spesa')" class="pro">➖ Nuova Spesa</button>
-        <button id="btnVediMovimenti" class="secondary" data-period="current">Vedi Movimenti</button>
+    <!-- PREMIUM -->
+    <section class="premium-section" id="sezionePremium" aria-label="FunzionalitÃ  Premium">
+      <h2>ðŸŒŸ Premium â€” Spese Ricorrenti</h2>
+
+      <!-- Spese annuali -->
+      <div class="premium-block">
+        <h3>ðŸ“… Annuali (rate divise su N mesi)</h3>
+        <input id="descAnnuale" type="text" placeholder="Descrizione (es. Assicurazione Auto)" />
+        <input id="impAnnuale" type="number" step="0.01" placeholder="Importo totale (â‚¬)" />
+        <div class="row">
+          <label for="mesiRate">Mesi di ripartizione:</label>
+         <input id="mesiRate" type="number" min="1" max="60" placeholder="(decidi per quanti mesi ripartire)" />
+        </div>
+        <div class="row">
+          <label for="meseAnnuale">Inizio:</label>
+          <select id="meseAnnuale"></select>
+          <label for="annoAnnuale">Anno:</label>
+          <select id="annoAnnuale"></select>
+        </div>
+        <button onclick="aggiungiAnnuale()">âž• Aggiungi voce annuale</button>
+        <ul id="listaAnnuali" class="lista-premium"></ul>
       </div>
 
-      <div id="formEntrata" class="form-section hidden" aria-hidden="true">
-        <h3>Aggiungi Entrata</h3>
-        <input type="number" id="entrataImporto" placeholder="Importo €" />
-        <input type="text" id="entrataDesc" placeholder="Descrizione (es. Stipendio)" />
-        <button onclick="salvaMovimento('entrata')" class="buy">Salva Entrata</button>
-      </div>
-
-      <div id="formSpesa" class="form-section hidden" aria-hidden="true">
-        <h3>Aggiungi Spesa</h3>
-        <input type="number" id="spesaImporto" placeholder="Importo €" />
-        <input type="text" id="spesaDesc" placeholder="Descrizione (es. Affitto)" />
-        <select id="spesaCat" required>
-            <option value="Casa">Casa</option>
-            <option value="Cibo">Cibo</option>
-            <option value="Trasporti">Trasporti</option>
-            <option value="Svago">Svago</option>
-            <option value="Altro">Altro</option>
-        </select>
-        <button onclick="salvaMovimento('spesa')" class="pro">Salva Spesa</button>
-      </div>
-
-      <div id="listaPremium" class="premium-list-info">
-        <p>Tutte le tue transazioni sono disponibili cliccando su "Vedi Movimenti" o nella sezione "Dettagli Avanzati".</p>
+      <!-- Spese mensili -->
+      <div class="premium-block">
+        <h3>ðŸ’³ Mensili (quota fissa ogni mese)</h3>
+        <input id="descMensile" type="text" placeholder="Descrizione (es. Abbonamento Palestra)" />
+        <input id="impMensile" type="number" step="0.01" placeholder="Importo (â‚¬)" />
+        <div class="row">
+          <label for="meseMensile">Inizio:</label>
+          <select id="meseMensile"></select>
+          <label for="annoMensile">Anno:</label>
+          <select id="annoMensile"></select>
+        </div>
+        <button onclick="aggiungiMensile()">âž• Aggiungi voce mensile</button>
+        <small class="hint">Resta attiva ogni mese finchÃ© non la â€œstacchiâ€ (stop dal mese successivo).</small>
+        <ul id="listaMensili" class="lista-premium"></ul>
       </div>
     </section>
 
-    <section class="base-section" aria-label="Dettagli avanzati" id="dettagliAvanzati">
-        <h2>Dettagli Avanzati (Premium)</h2>
-        <ul id="listaAnnuali" class="list-annuali"><li style="font-style: italic; color: #64748b;">Dati annuali non implementati in questa versione.</li></ul>
-        <ul id="listaMensili" class="list-mensili"><li style="font-style: italic; color: #64748b;">Dati mensili dettagliati non implementati in questa versione.</li></ul>
-    </section>
-    
+    <!-- Azzeramento dati -->
     <section aria-label="Strumenti sviluppatore">
-      <button onclick="azzeraTutto()" class="danger">🔄 AZZERA TUTTO (solo per test!)</button>
+      <button onclick="azzeraTutto()" class="danger">ðŸ”„ AZZERA TUTTO (solo per test!)</button>
     </section>
   </div>
-  
+  <!-- Modal 'Vedi Movimenti' -->
   <div id="modalMovimenti" class="vm-modal" aria-hidden="true">
     <div class="vm-modal__overlay" data-close="1"></div>
     <div class="vm-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="vm-title" tabindex="-1">
       <header class="vm-modal__header">
         <h3 id="vm-title">Movimenti di <span id="vm-meseanno"></span></h3>
-        <button class="vm-close" aria-label="Chiudi" data-close="1">✖</button>
+        <button class="vm-close" aria-label="Chiudi" data-close="1">âœ–</button>
       </header>
       <div class="vm-modal__body">
         <div class="vm-col">
@@ -107,12 +183,12 @@
         <div class="vm-totals">
           <div>Totale entrate: <strong id="vm-tot-entrate"></strong></div>
           <div>Totale spese: <strong id="vm-tot-spese"></strong></div>
-          <div>Saldo mensile: <strong id="vm-saldo"></strong></div>
+          <div>Saldo netto: <strong id="vm-saldonetto"></strong></div>
         </div>
+        <button class="vm-ok" data-close="1" aria-label="Chiudi riepilogo">OK</button>
       </footer>
     </div>
   </div>
-
-  <script src="script.js?v=23"></script>
+  <script src="script.js?v=37"></script>
 </body>
 </html>
