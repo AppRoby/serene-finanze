@@ -581,3 +581,4 @@ window.addEventListener("DOMContentLoaded", () => {
     if (ev.key === "Escape") chiudiModalMovimenti();
   });
 });
+
