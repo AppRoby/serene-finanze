@@ -6,7 +6,7 @@
    ========================= */
 const MESI = ["gennaio","febbraio","marzo","aprile","maggio","giugno","luglio","agosto","settembre","ottobre","novembre","dicembre"];
 const cap = s => s ? s.charAt(0).toUpperCase()+s.slice(1) : s;
-const fmt = n => `â‚¬${Number(n||0).toFixed(2)}`;
+const fmt = n => {Number(n||0).toFixed(2)}`;
 const idxMeseFromName = m => MESI.indexOf(m);
 
 function periodToNum(mIdx, year){ return year*12 + mIdx; }
@@ -170,7 +170,7 @@ function progressEndWithin(sIdx, sY, eIdx, eY){
 function aggiungiEntrata(){
   const desc = document.getElementById("descrizioneEntrata").value.trim();
   const imp  = parseFloat(document.getElementById("importoEntrata").value);
-  if(!desc || !isFinite(imp) || imp<=0){ alert("âš ï¸ Inserisci descrizione e importo valido (>0)."); return; }
+  if(!desc || !isFinite(imp) || imp<=0){ alert("Inserisci descrizione e importo valido (>0)."); return; }
   const d = ensurePeriodo(periodoCorrente.mese, periodoCorrente.anno);
  const now = Date.now();
 d.entrate.push({ descrizione: desc, importo: imp, ts: now });
@@ -181,7 +181,7 @@ d.entrate.push({ descrizione: desc, importo: imp, ts: now });
 function aggiungiSpesa(){
   const desc = document.getElementById("descrizioneSpesa").value.trim();
   const imp  = parseFloat(document.getElementById("importoSpesa").value);
-  if(!desc || !isFinite(imp) || imp<=0){ alert("âš ï¸ Inserisci descrizione e importo valido (>0)."); return; }
+  if(!desc || !isFinite(imp) || imp<=0){ alert("Inserisci descrizione e importo valido (>0)."); return; }
   const d = ensurePeriodo(periodoCorrente.mese, periodoCorrente.anno);
   const now = Date.now();
 d.spese.push({ descrizione: desc, importo: imp, ts: now });
@@ -225,7 +225,7 @@ function aggiungiAnnuale(){
   const mesi=parseInt(document.getElementById("mesiRate").value);
   const meseStart=document.getElementById("meseAnnuale").value;
   const annoStart=Number(document.getElementById("annoAnnuale").value);
-  if(!desc || !isFinite(imp) || imp<=0){ alert("âš ï¸ Inserisci descrizione e importo valido."); return; }
+  if(!desc || !isFinite(imp) || imp<=0){ alert("Inserisci descrizione e importo valido."); return; }
   speseAnnuali.push({desc,imp,mesi,meseStart,annoStart});
   salvaPremium(); renderPremium(); aggiornaUI();
 }
@@ -234,7 +234,7 @@ function aggiungiMensile(){
   const imp=parseFloat(document.getElementById("impMensile").value);
   const meseStart=document.getElementById("meseMensile").value;
   const annoStart=Number(document.getElementById("annoMensile").value);
-  if(!desc || !isFinite(imp) || imp<=0){ alert("âš ï¸ Inserisci descrizione e importo valido."); return; }
+  if(!desc || !isFinite(imp) || imp<=0){ alert("Inserisci descrizione e importo valido."); return; }
   speseMensili.push({desc,imp,meseStart,annoStart,attiva:true});
   salvaPremium(); renderPremium(); aggiornaUI();
 }
@@ -268,7 +268,7 @@ function updateHeader(){
   const giorniProvaEl = document.getElementById("giorniProva");
   if (giorniProvaEl) giorniProvaEl.innerText = String(statoAbbonamento.giorniProva);
   const verEl = document.getElementById("versioneAttiva");
-  if (verEl) verEl.innerText = (statoAbbonamento.versione === "premium" ? "ðŸŒŸ Versione Premium attiva" : "âœ… Versione Base attiva");
+  if (verEl) verEl.innerText = (statoAbbonamento.versione === "premium" ? " Versione Premium attiva" : "âœ… Versione Base attiva");
 }
 function updateLists(){
   const m = periodoCorrente.mese, a = periodoCorrente.anno;
@@ -345,11 +345,11 @@ else if (statoAbbonamento.versione === "premium") {
   if(saldoBox){
     saldoBox.innerHTML = `
       <div class="saldo-breakdown">
-        <div class="rowline"><span>ðŸ’¸ Disponibile Mensile</span><strong>${fmt(saldoDisp)}</strong></div>
-        <div class="rowline sub"><span>â€“ Obiettivo mensile</span><span>${fmt(obMesManuale)}</span></div>
-       <div class="rowline sub"><span>â€“ Quota cumulativo${notaQuota}</span><span>${fmt(quotaCum)}</span></div>
-        <div class="rowline total"><span>ðŸ“˜ Contabile Mensile</span><strong>${fmt(saldoCont)}</strong></div>
-        <div class="rowline"><span>ðŸ’° Saldo Totale</span><strong>${fmt(saldoTot)}</strong></div>
+        <div class="rowline"><span> Disponibile Mensile</span><strong>${fmt(saldoDisp)}</strong></div>
+        <div class="rowline sub"><span> Obiettivo mensile</span><span>${fmt(obMesManuale)}</span></div>
+       <div class="rowline sub"><span> Quota cumulativo${notaQuota}</span><span>${fmt(quotaCum)}</span></div>
+        <div class="rowline total"><span> Contabile Mensile</span><strong>${fmt(saldoCont)}</strong></div>
+        <div class="rowline"><span> Saldo Totale</span><strong>${fmt(saldoTot)}</strong></div>
       </div>
     `;
   }
@@ -367,7 +367,7 @@ else if (statoAbbonamento.versione === "premium") {
         if(diff>0) df.textContent = `Hai superato di ${fmt(diff)}.`;
       }else{
         mm.className = "neutro";
-        mm.textContent = `âš ï¸ Ti mancano ${fmt(Math.abs(diff))} per arrivare a ${fmt(obMesManuale)} a ${cap(m)} ${a}.`;
+        mm.textContent = Ti mancano ${fmt(Math.abs(diff))} per arrivare a ${fmt(obMesManuale)} a ${cap(m)} ${a}.`;
       }
     }else{
       mm.className = "muted";
@@ -384,7 +384,7 @@ function aggiornaCumulativoUI(){
   if(!msg || !det) return;
 
   if(!obiettivoCumulativo){
-    msg.className="muted"; msg.innerText="ðŸ”” Hai un obiettivo cumulativo? Impostalo a sinistra.";
+    msg.className="muted"; msg.innerText=" Hai un obiettivo cumulativo? Impostalo a sinistra.";
     det.innerText=""; if(bar){ bar.style.width="0%"; bar.setAttribute("aria-valuenow","0"); }
     if(badge){ badge.classList.add("hidden"); }
     return;
@@ -411,7 +411,7 @@ function aggiornaCumulativoUI(){
   if(bar){ bar.style.width=`${percent}%`; bar.setAttribute("aria-valuenow", percent.toFixed(0)); }
 
   if(cumulato >= amount){
-    msg.className="verde"; msg.innerText = "ðŸ† Obiettivo cumulativo raggiunto!";
+    msg.className="verde"; msg.innerText = " Obiettivo cumulativo raggiunto!";
     det.innerText = `Risparmiati ${fmt(cumulato)} su ${fmt(amount)} entro ${labelEnd}.`;
     if(badge){ badge.classList.remove("hidden"); }
   }else{
@@ -554,8 +554,8 @@ function init(){
   const af = document.getElementById("aforisma");
   const afs = [
     "âœ¨ Ogni euro risparmiato Ã¨ un mattone della tua libertÃ  finanziaria.",
-    "ðŸš€ La disciplina batte la motivazione: 1% al giorno cambia tutto.",
-    "ðŸŒ± Piccoli importi, grandi abitudini: la ricchezza cresce nel tempo."
+    " La disciplina batte la motivazione: 1% al giorno cambia tutto.",
+    " Piccoli importi, grandi abitudini: la ricchezza cresce nel tempo."
   ];
   if(af) af.innerText = afs[new Date().getDate() % afs.length];
 }
@@ -648,4 +648,5 @@ function fmtDateTime(ts){
     const mi = String(d.getMinutes()).padStart(2,'0');
     return `${dd}/${mm}/${yyyy} ${hh}:${mi}`;
   }catch(e){ return ""; }
+
 }
