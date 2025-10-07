@@ -257,7 +257,6 @@ function renderPremium(){
     ULmen.innerHTML += `<li><span>${s.desc} â€” ${fmt(s.imp)} (da ${cap(s.meseStart)} ${s.annoStart})</span>
       <button onclick="rimuoviMensile(${i})">âœ–</button></li>`;
   });
-}
 
 /* =========================
    UI
@@ -655,3 +654,4 @@ function fmtDateTime(ts){
     return `${dd}/${mm}/${yyyy} ${hh}:${mi}`;
   }catch(e){ return ""; }
 }
+
