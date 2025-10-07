@@ -1,92 +1,210 @@
+/* Base */
 body {
-  font-family: 'Arial', sans-serif;
-  background: #f4f8fc;
-  color: #333;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  background: #f4f8fc; /* Sfondo chiara */
+  color: #1e293b; /* Testo scuro */
   margin: 0;
   padding: 0;
 }
 
+/* Palette Colori - Definizione */
+:root {
+    --primary-blue: #003366; 
+    --success-green: #00CC66; 
+    --danger-red: #CC3333; 
+    --action-orange: #FFA500;
+}
+
+/* Notice / Topbar */
+.notice {
+  background: var(--primary-blue); /* Blu scuro professionale */
+  color: #fff;
+  padding: .75rem 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: .5rem;
+}
+.app-title { font-weight: 800; font-size: 1.25rem; }
+.notice .actions { display: flex; gap: .5rem; align-items:center; }
+/* Stile per i pulsanti di azione (Attiva Premium) */
+.notice .pro { 
+    background: #6366f1; /* Viola/Indaco per Premium */
+    border: none; 
+    color: #fff; 
+    padding:.5rem .75rem; 
+    border-radius:6px; 
+    cursor:pointer; 
+    font-weight: 600;
+}
+.notice .info-prova { font-weight:600; font-size: 0.875rem; }
+/* Versione Attiva Status */
+#versioneAttiva {
+    background: var(--success-green);
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+}
+
+
+/* Layout card */
 .container {
   max-width: 980px;
-  margin: auto;
+  margin: 1rem auto 2rem;
   padding: 2rem;
   background: white;
-  border-radius: 8px;
-  margin-top: 3rem;
-  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+}
+.base-section {
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+}
+.base-section h2 { 
+    font-size: 1.5rem; 
+    font-weight: 700; 
+    color: var(--primary-blue);
+    margin-top: 0;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid #e2e8f0;
 }
 
-h1 { text-align: center; color: #2c3e50; }
-section { margin-bottom: 2rem; }
-
-input, select, button {
-  padding: 0.5rem;
-  margin-top: 0.5rem;
-  margin-right: 0.5rem;
-  width: 100%;
-  max-width: 100%;
-  box-sizing: border-box;
+/* Stile Saldo e Obiettivo */
+.saldo-box {
+    font-size: 2.5rem;
+    font-weight: 800;
+    margin-bottom: 1rem;
+    text-align: center;
+    padding: 1rem;
+    border-radius: 8px;
+    background: #f0fdf4; /* Sfondo leggero per il saldo */
+}
+.saldo-box .positivo { color: var(--success-green); }
+.saldo-box .negativo { color: var(--danger-red); }
+.aforisma {
+    text-align: center;
+    font-style: italic;
+    color: #64748b;
+    margin-bottom: 1.5rem;
 }
 
-button {
-  background: #3498db;
-  color: white;
-  border: none;
-  cursor: pointer;
+/* Stili Bottoni Generici */
+.actions { display: flex; gap: 0.75rem; flex-wrap: wrap; }
+button { 
+    padding: 0.6rem 1rem; 
+    border-radius: 6px; 
+    cursor: pointer; 
+    font-weight: 600;
+    transition: background-color 0.2s;
 }
-button:hover { background: #2980b9; }
+button.primary { background: var(--primary-blue); color: white; border: none; }
+button.secondary { background: #e2e8f0; color: #1e293b; border: none; }
+button.danger { background: var(--danger-red); color: white; border: none; margin-top: 2rem; }
+.transactions-actions button.buy { background: var(--success-green); }
+.transactions-actions button.pro { background: var(--danger-red); }
 
-.columns {
-  display: flex;
-  flex-direction: row;
-  gap: 2rem;
-  justify-content: space-between;
+/* Input e Form */
+input[type="text"], input[type="number"], select {
+    padding: 0.6rem;
+    border: 1px solid #cbd5e1;
+    border-radius: 4px;
+    flex-grow: 1;
 }
-.columns > div {
-  flex: 1;
-  background: #f0f4f8;
-  padding: 1rem;
-  border-radius: 8px;
+.form-section {
+    margin-top: 1.5rem;
+    padding: 1rem;
+    border: 1px solid var(--primary-blue);
+    border-radius: 6px;
+    background: #f8fafc;
 }
-ul { list-style: none; padding: 0; }
-ul li { margin-top: 0.5rem; }
-
-#messaggioObiettivo,
-#messaggioCumulativo {
-  padding: 1rem;
-  border-radius: 8px;
-  font-weight: bold;
+.form-section h3 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--primary-blue);
+    margin-top: 0;
+    margin-bottom: 1rem;
 }
-
-.rosso { background-color: #ffe6e6; color: #c0392b; }
-.verde { background-color: #e0ffe0; color: #27ae60; }
-.neutro { background-color: #fff3cd; color: #8a6d3b; }
-.muted { color: #666; font-weight: normal; }
-
-.hint { color: #6b7280; font-size: 0.9rem; }
-
-.row { display: flex; gap: 0.5rem; align-items: center; }
-.row select { width: auto; min-width: 140px; }
-
-.periodo {
-  display: grid;
-  grid-template-columns: 160px 1fr 160px 1fr;
-  gap: 0.5rem 1rem;
-  align-items: center;
+.form-section .actions {
+    margin-top: 1rem;
+    justify-content: flex-end;
 }
 
-.danger {
-  background-color: crimson;
-  color: white;
-  width: 100%;
-  padding: 1rem;
-  font-weight: bold;
-  border-radius: 6px;
+/* Stile Obiettivo Mensile Manuale */
+.monthly-goal {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px dashed #cbd5e1;
 }
-.danger:hover { background-color: #b3122b; }
+.monthly-goal label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: var(--primary-blue);
+}
+.monthly-goal .actions {
+    display: flex;
+    gap: 0.5rem;
+}
+.monthly-goal input {
+    flex-grow: 1;
+}
 
-input[disabled] {
-  background: #e9ecef;
-  color: #495057;
-  cursor: not-allowed;
+/* Stato Obiettivo (Progress Bar) */
+.goal-status {
+    text-align: left;
+    margin-top: 1rem;
 }
+.goal-bar-container {
+    width: 100%;
+    height: 10px;
+    background: #e2e8f0;
+    border-radius: 5px;
+    margin: 8px 0;
+}
+.goal-bar {
+    height: 100%;
+    background: var(--success-green);
+    border-radius: 5px;
+    transition: width 0.5s ease-in-out;
+}
+.goal-info {
+    font-size: 0.875rem;
+    color: #64748b;
+    display: flex;
+    justify-content: space-between;
+}
+.goal-months {
+    font-weight: 700;
+    color: var(--action-orange);
+}
+
+/* ===== Modal \"Vedi Movimenti\" ===== */
+.vm-modal { position:fixed; inset:0; display:none; z-index:9999; }
+.vm-modal.is-open { display:block; }
+.vm-modal__overlay {
+  position:absolute; inset:0;
+  background:rgba(0,51,102,.65); /* Scuro in linea con primary-blue */
+  backdrop-filter: blur(3px);
+}
+.vm-modal__dialog {
+  position:relative;
+  margin:6vh auto;
+  width:min(940px,92vw);
+  max-height:88vh; overflow:hidden;
+  background:#fff; border-radius:12px;
+  box-shadow:0 20px 60px rgba(0,0,0,.25);
+  display:flex; flex-direction:column;
+}
+.vm-modal__header { display:flex; align-items:center; justify-content:space-between; padding:14px 18px; border-bottom:1px solid #e5e7eb; }
+.vm-modal__body { display:grid; grid-template-columns:1fr 1fr; gap:16px; padding:14px 18px; overflow:auto; }
+.vm-modal__footer { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:12px 18px; background:#f1f5f9; border-top:1px solid #e5e7eb; }
+.vm-modal__footer h4, .vm-col h4 { color: var(--primary-blue); margin-top:0; border-bottom: 1px solid #e5e7eb; padding-bottom: 5px; }
+.vm-list { list-style: none; padding: 0; margin: 0; }
+.vm-list li { padding: 8px 0; border-bottom: 1px dotted #e5e7eb; font-size: 0.95rem; }
+.vm-list li strong { display: block; }
+.vm-totals strong#vm-tot-entrate { color: var(--success-green); }
+.vm-totals strong#vm-tot-spese { color: var(--danger-red); }
+.vm-totals strong#vm-saldo { font-size: 1.1rem; }
