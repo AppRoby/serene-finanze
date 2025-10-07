@@ -17,11 +17,13 @@ function numToPeriod(n){ return { mIdx: (n%12+12)%12, anno: Math.floor(n/12) }; 
    ========================= */
 const STORE_MAIN   = "sereniFinanze_v8";
 const STORE_CUM    = "sereniFinanze_cumulativo_v8";
+const STORE_ABO    = "sereniFinanze_abbonamento_v1";
 const STORE_PREM_A = "sereniFinanze_premiumAnnuali";
 const STORE_PREM_M = "sereniFinanze_premiumMensili";
 
 let datiPerPeriodo = {};              // { "gennaio-2025": {entrate:[],spese:[],obiettivoMensileManuale:Number} }
 let obiettivoCumulativo = null;       // {amount, meseInizioIdx, annoInizio, meseTargetIdx, annoTarget}
+let statoAbbonamento = { versione:"base", giorniProva:30 };
 let speseAnnuali = [];                // [{desc, imp, mesi, meseStart, annoStart}]
 let speseMensili = [];                // [{desc, imp, meseStart, annoStart, attiva:true}]
 let periodoCorrente = { mese:"", anno:0 };
@@ -32,6 +34,7 @@ let periodoCorrente = { mese:"", anno:0 };
 function caricaDati(){
   try { const raw=localStorage.getItem(STORE_MAIN); if(raw) datiPerPeriodo = JSON.parse(raw); } catch{}
   try { const raw=localStorage.getItem(STORE_CUM);  if(raw) obiettivoCumulativo = JSON.parse(raw); } catch{}
+  try { const raw=localStorage.getItem(STORE_ABO);  if(raw) statoAbbonamento   = JSON.parse(raw); } catch{}
   try { const raw=localStorage.getItem(STORE_PREM_A); if(raw) speseAnnuali = JSON.parse(raw); } catch{}
   try { const raw=localStorage.getItem(STORE_PREM_M); if(raw) speseMensili = JSON.parse(raw); } catch{}
   const now = new Date();
@@ -40,6 +43,7 @@ function caricaDati(){
 }
 function salvaDati(){ localStorage.setItem(STORE_MAIN, JSON.stringify(datiPerPeriodo)); }
 function salvaCumulativo(){ localStorage.setItem(STORE_CUM, JSON.stringify(obiettivoCumulativo)); }
+function salvaAbbonamento(){ localStorage.setItem(STORE_ABO, JSON.stringify(statoAbbonamento)); }
 function salvaPremium(){
   localStorage.setItem(STORE_PREM_A, JSON.stringify(speseAnnuali));
   localStorage.setItem(STORE_PREM_M, JSON.stringify(speseMensili));
@@ -121,9 +125,10 @@ function calcolaSpesePremiumMese(mese, anno){
 
 function saldoDisponibileOfNome(meseNome, anno){
   const d = getPeriodoData(meseNome, anno);
-  const entr = (d.entrate||[]).reduce((s,e)=>s+Number(e.importo||0),0);
-  const spe  = (d.spese  ||[]).reduce((s,e)=>s+Number(e.importo||0),0);
-  const extra = calcolaSpesePremiumMese(meseNome, anno); // Premium sempre attivo
+  const entr = d.entrate.reduce((s,e)=>s+Number(e.importo),0);
+  const spe  = d.spese.reduce((s,e)=>s+Number(e.importo),0);
+  const isPrem = (statoAbbonamento && statoAbbonamento.versione === "premium");
+  const extra = isPrem ? calcolaSpesePremiumMese(meseNome, anno) : 0;
   return entr - (spe + extra);
 }
 function saldoTotaleFinoA(mIdxLimite, annoLimite){
@@ -206,15 +211,7 @@ function salvaObiettivoCumulativo(){
   const eIdx = idxMeseFromName(meseFine);
   const mesiRim = (annoFine-annoInizio)*12 + (eIdx - sIdx) + 1;
   if(mesiRim<=0){ alert("Periodo non valido. Correggi le date."); return; }
-
-  // 👇 correzione: uso 'importo' (non 'amount')
-  obiettivoCumulativo = {
-    importo: imp,
-    meseInizioIdx: sIdx,
-    annoInizio,
-    meseTargetIdx: eIdx,
-    annoTarget: annoFine
-  };
+  obiettivoCumulativo = { amount: imp, meseInizioIdx: sIdx, annoInizio, meseTargetIdx: eIdx, annoTarget: annoFine };
   salvaCumulativo();
   aggiornaUI();
 }
@@ -257,25 +254,21 @@ function renderPremium(){
     ULmen.innerHTML += `<li><span>${s.desc} â€” ${fmt(s.imp)} (da ${cap(s.meseStart)} ${s.annoStart})</span>
       <button onclick="rimuoviMensile(${i})">âœ–</button></li>`;
   });
+}
 
 /* =========================
    UI
    ========================= */
 function updateHeader(){
   const m = periodoCorrente.mese, a = periodoCorrente.anno;
-
   const labelPeriodo = document.getElementById("labelPeriodo");
   const labelMeseObj = document.getElementById("meseObiettivo");
   if (labelPeriodo) labelPeriodo.innerText = `${cap(m)} ${a}`;
   if (labelMeseObj) labelMeseObj.innerText = `${cap(m)} ${a}`;
-
-  // ✅ QUI le virgolette SONO OBBLIGATORIE
-  const verEl = document.getElementById("versioneAttiva");
-  if (verEl) verEl.innerText = "🌟 Versione Premium attiva";
-
-  // se esiste ancora l'elemento giorniProva, svuotalo (opzionale)
   const giorniProvaEl = document.getElementById("giorniProva");
-  if (giorniProvaEl) giorniProvaEl.innerText = "";
+  if (giorniProvaEl) giorniProvaEl.innerText = String(statoAbbonamento.giorniProva);
+  const verEl = document.getElementById("versioneAttiva");
+  if (verEl) verEl.innerText = (statoAbbonamento.versione === "premium" ? "ðŸŒŸ Versione Premium attiva" : "âœ… Versione Base attiva");
 }
 function updateLists(){
   const m = periodoCorrente.mese, a = periodoCorrente.anno;
@@ -318,64 +311,63 @@ function updateSaldoBox(){
   const mIdx = idxMeseFromName(m);
   const d = getPeriodoData(m,a);
 
-  // Totali mese
-  const totEntrate = (d.entrate||[]).reduce((s,e)=>s+Number(e.importo||0),0);
-  const totSpese   = (d.spese  ||[]).reduce((s,e)=>s+Number(e.importo||0),0);
+const saldoDisp = saldoDisponibileOfNome(m,a);
+const obMesManuale = getObiettivoMensileManuale(d);
+const quotaCum = quotaCumulativoPerMese(m,a);
+// nota: se sono fuori intervallo, lo scrivo accanto all'etichetta
+let notaQuota = "";
+if (obiettivoCumulativo && obiettivoCumulativo.importo){
+  const mIdx = idxMeseFromName(m);
+  const curN   = a*12 + mIdx;
+  const startN = obiettivoCumulativo.annoInizio*12 + obiettivoCumulativo.meseInizioIdx;
+  const endN   = obiettivoCumulativo.annoTarget*12 + obiettivoCumulativo.meseTargetIdx;
+  if (curN < startN || curN > endN) {
+    const MESI = ["Gennaio","Febbraio","Marzo","Aprile","Maggio","Giugno","Luglio","Agosto","Settembre","Ottobre","Novembre","Dicembre"];
+    const range = `${MESI[obiettivoCumulativo.meseInizioIdx]} ${obiettivoCumulativo.annoInizio}â€“${MESI[obiettivoCumulativo.meseTargetIdx]} ${obiettivoCumulativo.annoTarget}`;
+    notaQuota = ` <small class="muted">(fuori intervallo ${range})</small>`;
+  }
+}
 
-  // Spese ricorrenti Premium
-  const quotaRip  = quotaSpeseRipartitePerMese(m,a);
-  const quotaMens = speseMensiliPerMese(m,a);
+let saldoCont;
 
-  // Obiettivi: (momentaneamente) manuale + cumulativo
-  const obMensile = getObiettivoMensileManuale(d);
-  const quotaCum  = quotaCumulativoPerMese(m,a);
+// BASE â†’ resta invariato
+if (statoAbbonamento.versione === "base") {
+  saldoCont = saldoDisp - obMesManuale - quotaCum;
+}
 
-  // Formule PREMIUM
-  const mensileDisponibile = totEntrate - (totSpese + quotaRip + quotaMens);
-  const mensileContabile   = mensileDisponibile - (obMensile + quotaCum);
-  const saldoTotale        = saldoTotaleFinoA(mIdx, a);
+// PREMIUM â†’ aggiornata con la quota cumulativa
+else if (statoAbbonamento.versione === "premium") {
+  saldoCont = saldoDisp - quotaCum;
+}
+  const saldoTot  = saldoTotaleFinoA(mIdx,a);
 
-  // Nota "fuori intervallo" per cumulativo
-  let notaQuota = "";
-  if (obiettivoCumulativo && obiettivoCumulativo.importo){
-    const curN   = a*12 + mIdx;
-    const startN = obiettivoCumulativo.annoInizio*12 + obiettivoCumulativo.meseInizioIdx;
-    const endN   = obiettivoCumulativo.annoTarget*12 + obiettivoCumulativo.meseTargetIdx;
-    if (curN < startN || curN > endN) {
-      const Ms = ["Gennaio","Febbraio","Marzo","Aprile","Maggio","Giugno","Luglio","Agosto","Settembre","Ottobre","Novembre","Dicembre"];
-      notaQuota = ` <small class="muted">(fuori intervallo ${Ms[obiettivoCumulativo.meseInizioIdx]} ${obiettivoCumulativo.annoInizio}–${Ms[obiettivoCumulativo.meseTargetIdx]} ${obiettivoCumulativo.annoTarget})</small>`;
-    }
+  const saldoBox = document.getElementById("saldo");
+  if(saldoBox){
+    saldoBox.innerHTML = `
+      <div class="saldo-breakdown">
+        <div class="rowline"><span>ðŸ’¸ Disponibile Mensile</span><strong>${fmt(saldoDisp)}</strong></div>
+        <div class="rowline sub"><span>â€“ Obiettivo mensile</span><span>${fmt(obMesManuale)}</span></div>
+       <div class="rowline sub"><span>â€“ Quota cumulativo${notaQuota}</span><span>${fmt(quotaCum)}</span></div>
+        <div class="rowline total"><span>ðŸ“˜ Contabile Mensile</span><strong>${fmt(saldoCont)}</strong></div>
+        <div class="rowline"><span>ðŸ’° Saldo Totale</span><strong>${fmt(saldoTot)}</strong></div>
+      </div>
+    `;
   }
 
-  // Render
-  const saldoBox = document.getElementById("saldo");
-  if(!saldoBox) return;
-  saldoBox.innerHTML = `
-    <div class="saldo-breakdown">
-      <div class="rowline"><span>💶 Disponibile Mensile</span><strong>${fmt(mensileDisponibile)}</strong></div>
-      <div class="rowline sub"><span>– Spese ripartizione</span><span>${fmt(quotaRip)}</span></div>
-      <div class="rowline sub"><span>– Spese mensili</span><span>${fmt(quotaMens)}</span></div>
-      <div class="rowline sub"><span>– Obiettivo mensile</span><span>${fmt(obMensile)}</span></div>
-      <div class="rowline sub"><span>– Quota cumulativo${notaQuota}</span><span>${fmt(quotaCum)}</span></div>
-      <div class="rowline total"><span>📘 Contabile Mensile</span><strong>${fmt(mensileContabile)}</strong></div>
-      <div class="rowline"><span>💰 Saldo Totale</span><strong>${fmt(saldoTotale)}</strong></div>
-    </div>
-  `;
-
-  // Verifica mensile (momentaneamente sul manuale; nello Step 2 passeremo alla quota N-mesi)
+  // Verifica mensile
   const mm = document.getElementById("messMens");
   const df = document.getElementById("diffMens");
   if(mm && df){
-    const diff = mensileDisponibile - obMensile;
+    const diff = saldoDisp - obMesManuale;
     df.textContent = "";
-    if(obMensile > 0){
+    if(obMesManuale > 0){
       if(diff >= 0){
         mm.className = "verde";
-        mm.textContent = `✅ Obiettivo mensile di ${fmt(obMensile)} raggiunto a ${cap(m)} ${a}.`;
-        if(diff>0) df.textContent = `Avanzo: ${fmt(diff)}.`;
+        mm.textContent = `âœ… Obiettivo mensile di ${fmt(obMesManuale)} raggiunto a ${cap(m)} ${a}.`;
+        if(diff>0) df.textContent = `Hai superato di ${fmt(diff)}.`;
       }else{
         mm.className = "neutro";
-        mm.textContent = `⚠️ Ti mancano ${fmt(Math.abs(diff))} per arrivare a ${fmt(obMensile)}.`;
+        mm.textContent = `âš ï¸ Ti mancano ${fmt(Math.abs(diff))} per arrivare a ${fmt(obMesManuale)} a ${cap(m)} ${a}.`;
       }
     }else{
       mm.className = "muted";
@@ -383,6 +375,7 @@ function updateSaldoBox(){
     }
   }
 }
+
 function aggiornaCumulativoUI(){
   const msg = document.getElementById("messaggioCumulativo");
   const det = document.getElementById("dettaglioCumulativo");
@@ -442,6 +435,8 @@ function lockMensileByCumulativo(){
   const man = getObiettivoMensileManuale(d);
   if(man>0) input.value = man;
 }
+function attivaBase(){ statoAbbonamento.versione="base"; salvaAbbonamento(); aggiornaUI(); }
+function attivaPremium(){ statoAbbonamento.versione="premium"; salvaAbbonamento(); aggiornaUI(); }
 
 /* =========================
    Periodo & Selects
@@ -518,6 +513,7 @@ function initAllDropdowns(){
     }
   });
 }
+
 /* =========================
    INIT & UI aggregator
    ========================= */
@@ -531,54 +527,125 @@ function aggiornaUI(){
 }
 
 function azzeraTutto(){
-  if(confirm("Vuoi davvero azzerare tutti i dati?")){
-    localStorage.clear();
-    datiPerPeriodo = {};
-    obiettivoCumulativo = null;
-    speseAnnuali = [];
-    speseMensili = [];
-    document.getElementById("mesiRate").value = "";
-    caricaDati();
-    popolaSelectMesiEAnni();
-    initAllDropdowns();
-    aggiornaUI();
-    alert("✅ Dati azzerati con successo!");
-  }
-}
+    if(confirm("Vuoi davvero azzerare tutti i dati?")){
+        localStorage.clear();
+        datiPerPeriodo={};
+        obiettivoCumulativo=null;
+        speseAnnuali=[];
+        speseMensili=[];
+        
+        // Svuoto anche il campo "Mesi di ripartizione"
+        document.getElementById("mesiRate").value = "";
 
-/* =========================
-   INIT UNIFICATO
-   ========================= */
-window.addEventListener("DOMContentLoaded", () => {
+        caricaDati();
+        popolaSelectMesiEAnni();
+        initAllDropdowns();
+        aggiornaUI();
+        
+        alert("âœ… Dati azzerati con successo!");
+    }
+}
+function init(){
   caricaDati();
   popolaSelectMesiEAnni();
   initAllDropdowns();
   aggiornaUI();
-
-  // ✅ Aforisma random
+  // aforisma random
   const af = document.getElementById("aforisma");
   const afs = [
-    "✨ Ogni euro risparmiato è un mattone della tua libertà finanziaria.",
-    "🚀 La disciplina batte la motivazione: 1% al giorno cambia tutto.",
-    "🌱 Piccoli importi, grandi abitudini: la ricchezza cresce nel tempo."
+    "âœ¨ Ogni euro risparmiato Ã¨ un mattone della tua libertÃ  finanziaria.",
+    "ðŸš€ La disciplina batte la motivazione: 1% al giorno cambia tutto.",
+    "ðŸŒ± Piccoli importi, grandi abitudini: la ricchezza cresce nel tempo."
   ];
-  if (af) af.innerText = afs[new Date().getDate() % afs.length];
+  if(af) af.innerText = afs[new Date().getDate() % afs.length];
+}
+window.addEventListener("DOMContentLoaded", init);
+/* =========================
+   VEDI MOVIMENTI (Modal)
+   ========================= */
+function apriModalMovimenti(){
+  const modal = document.getElementById("modalMovimenti");
+  if(!modal) return;
+  // Dati del mese corrente
+  const m = periodoCorrente.mese, a = periodoCorrente.anno;
+  const d = getPeriodoData(m, a);
 
-  // ✅ Collegamento bottone 'VEDI MOVIMENTI'
+  // Liste
+  const ULent = modal.querySelector("#vm-lista-entrate");
+  const ULspe = modal.querySelector("#vm-lista-spese");
+  const esc = s => String(s||"").replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+
+  if(ULent) ULent.innerHTML = d.entrate.map(it =>
+  `<li>
+    <span>âž• ${esc(it.descrizione)}
+      <small class="vm-when">${fmtDateTime(it.ts)}</small>
+    </span>
+    <span class="importo-verde">${fmt(it.importo)}</span>
+  </li>`
+).join("");
+
+if(ULspe) ULspe.innerHTML = d.spese.map(it =>
+  `<li>
+    <span>âž– ${esc(it.descrizione)}
+      <small class="vm-when">${fmtDateTime(it.ts)}</small>
+    </span>
+    <span class="importo-rosso">-${fmt(Math.abs(it.importo))}</span>
+  </li>`
+).join("");
+  // Totali e saldo netto
+  const totEntr = d.entrate.reduce((s,e)=>s+Number(e.importo||0),0);
+  const totSpe  = d.spese.reduce((s,e)=>s+Number(e.importo||0),0);
+  const saldo   = saldoDisponibileOfNome(m, a); // include eventuali spese Premium
+
+  const elME = modal.querySelector("#vm-meseanno");
+  const elTE = modal.querySelector("#vm-tot-entrate");
+  const elTS = modal.querySelector("#vm-tot-spese");
+  const elSN = modal.querySelector("#vm-saldo");
+
+  if(elME) elME.textContent = cap(m) + " " + a;
+  if(elTE) elTE.textContent = fmt(totEntr);
+  if(elTS) elTS.textContent = fmt(totSpe);
+  if(elSN) elSN.textContent = (saldo>=0? fmt(saldo) : `-${fmt(Math.abs(saldo))}`);
+
+  // Apri modal
+  modal.classList.add("is-open");
+  const title = modal.querySelector("#vm-title");
+  if(title) title.focus();
+}
+
+function chiudiModalMovimenti(){
+  const modal = document.getElementById("modalMovimenti");
+  if(!modal) return;
+  modal.classList.remove("is-open");
+}
+
+// Wiring al load (lasciamo intatto il tuo init)
+window.addEventListener("DOMContentLoaded", ()=>{
   const btn = document.getElementById("btnVediMovimenti");
-  if (btn) btn.addEventListener("click", apriModalMovimenti);
+  if(btn) btn.addEventListener("click", apriModalMovimenti);
 
   const modal = document.getElementById("modalMovimenti");
-  if (modal) {
-    modal.addEventListener("click", ev => {
+  if(modal){
+    modal.addEventListener("click", (ev)=>{
       const t = ev.target;
-      if (t && t.getAttribute("data-close")) chiudiModalMovimenti();
+      if(t && t.getAttribute("data-close")) chiudiModalMovimenti();
     });
   }
 
-  // ✅ Chiudi modal con ESC
-  document.addEventListener("keydown", ev => {
-    if (ev.key === "Escape") chiudiModalMovimenti();
+  // Chiudi con ESC
+  document.addEventListener("keydown", (ev)=>{
+    if(ev.key === "Escape") chiudiModalMovimenti();
   });
 });
-
+function fmtDateTime(ts){
+  try{
+    if(!ts) return "";
+    const d = new Date(ts);
+    const dd = String(d.getDate()).padStart(2,'0');
+    const mm = String(d.getMonth()+1).padStart(2,'0');
+    const yyyy = d.getFullYear();
+    const hh = String(d.getHours()).padStart(2,'0');
+    const mi = String(d.getMinutes()).padStart(2,'0');
+    return `${dd}/${mm}/${yyyy} ${hh}:${mi}`;
+  }catch(e){ return ""; }
+}

@@ -13,8 +13,12 @@
     <h1 class="app-title">ðŸ“† Sereni Finanze</h1>
 
     <div id="abbonamenti" class="abbonamenti-box actions" aria-label="Gestione versioni">
-  <div class="info-prova">🌟 Versione Premium attiva</div>
-</div>
+      <button class="buy" onclick="attivaBase()" aria-label="Attiva versione base">Versione Base</button>
+      <button class="pro" onclick="attivaPremium()" aria-label="Attiva versione Premium">Attiva Premium</button>
+      <div id="provaInfo" class="info-prova">
+        â³ Periodo di prova: ancora <span id="giorniProva">30</span> giorni â€”
+        <span id="versioneAttiva">âœ… Versione Base attiva</span>
+      </div>
     </div>
   </div>
 
@@ -189,9 +193,6 @@
       </footer>
     </div>
   </div>
-  <script src="script.js?v=44"></script>
+  <script src="script.js?v=37"></script>
 </body>
 </html>
-
-
-
